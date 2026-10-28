@@ -1,0 +1,12 @@
+[project]
+name = "rfpmanager"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "openai>=3.40.0",
+    "pydantic-settings>=2.16.2",
+    "pypdf>=6.21.4",
+    "python-docx>=1.2.0",
+]
