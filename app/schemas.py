@@ -28,3 +28,15 @@ class SolutionSummary(BaseModel):
     requirements: list[Requirement]
     approach: list[ApproachStep]
     risks: list[Risk]
+
+class DocumentSection(BaseModel):
+    id: str
+    title: str
+    level: int
+    text: str
+
+    @property
+    def char_count(self) -> int:
+        return len(self.text)
+
+
