@@ -10,6 +10,26 @@ class Requirement(BaseModel):
     source: str = Field(description="Section or short quote from the RFP backing this requirement")
 
 
+class ExtractedRequirement(BaseModel):
+    """What the LLM returns for one requirement found in a section."""
+
+    description: str = Field(description="One self-contained sentence stating what the supplier must do or provide")
+    category: Literal["functional", "non-functional", "compliance", "commercial", "other"]
+    mandatory: bool = Field(description="True only if the RFP says must/shall/required/mandatory")
+    quote: str = Field(description="Verbatim span copied from the section that states this requirement")
+
+
+class SectionExtraction(BaseModel):
+    requirements: list[ExtractedRequirement]
+
+
+class SectionRequirement(ExtractedRequirement):
+    """An extracted requirement plus fields set by code, never by the LLM."""
+
+    section_id: str
+    quote_found: bool = Field(description="True if the quote was found in the section text")
+
+
 class ApproachStep(BaseModel):
     phase: str
     description: str
