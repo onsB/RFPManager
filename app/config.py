@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     # Local models have small context windows; longer documents are truncated for now.
     max_document_chars: int = 40_000
+    max_section_chars: int = 8_000  # ~2k tokens per section
 
 
 settings = Settings()

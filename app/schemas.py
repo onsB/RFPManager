@@ -34,6 +34,11 @@ class DocumentSection(BaseModel):
     title: str
     level: int
     text: str
+    path: list[str] = []          # parent headings, outermost first
+
+    @property
+    def breadcrumb(self) -> str:
+        return " > ".join([*self.path, self.title])
 
     @property
     def char_count(self) -> int:
