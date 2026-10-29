@@ -2,4 +2,6 @@
 .venv/
 __pycache__/
 *.pyc
-rfps/
+data/
+app/explore.ipynb
+.claude/settings.local.json
