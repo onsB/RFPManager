@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RFP Manager</title>
+<style>
+  :root { --bg: #f7f7f5; --card: #fff; --text: #1d1d1b; --muted: #6b6b66; --line: #e2e2dd;
+          --accent: #2f5bea; --ok: #1f8a4c; --bad: #c0392b; --must: #8a5a00; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: var(--bg); color: var(--text); }
+  main { max-width: 960px; margin: 0 auto; padding: 32px 16px; }
+  h1 { margin: 0 0 4px; font-size: 24px; }
+  .sub { color: var(--muted); margin: 0 0 24px; }
+  form { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; background: var(--card);
+         border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+  button { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 8px 16px;
+           font: inherit; cursor: pointer; }
+  button:disabled { opacity: .5; cursor: default; }
+  #status { color: var(--muted); margin: 16px 0; }
+  .section { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
+             margin-bottom: 12px; padding: 12px 16px; }
+  .section h2 { font-size: 15px; margin: 0; display: flex; justify-content: space-between; gap: 12px; }
+  .section h2 span { color: var(--muted); font-weight: normal; white-space: nowrap; }
+  .pending { color: var(--muted); }
+  .req { border-top: 1px solid var(--line); padding: 8px 0; }
+  .req:first-of-type { margin-top: 8px; }
+  .tags { display: flex; gap: 6px; margin-bottom: 2px; font-size: 12px; }
+  .tag { border: 1px solid var(--line); border-radius: 4px; padding: 0 6px; }
+  .must { color: var(--must); border-color: var(--must); }
+  .ok { color: var(--ok); border-color: var(--ok); }
+  .bad { color: var(--bad); border-color: var(--bad); }
+  .quote { color: var(--muted); font-size: 13px; font-style: italic; }
+  .error { color: var(--bad); }
+</style>
+</head>
+<body>
+<main>
+  <h1>RFP Manager</h1>
+  <p class="sub">Upload an RFP (PDF, DOCX, TXT, MD). Requirements are extracted section by section.</p>
+
+  <form id="form">
+    <input type="file" id="file" name="file" accept=".pdf,.docx,.txt,.md" required>
+    <button id="run">Extract requirements</button>
+  </form>
+
+  <p id="status"></p>
+  <div id="results"></div>
+</main>
+
+<script>
+const form = document.getElementById("form");
+const runBtn = document.getElementById("run");
+const statusEl = document.getElementById("status");
+const results = document.getElementById("results");
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text !== undefined) e.textContent = text;
+  return e;
+}
+
+function renderSection(card, event) {
+  card.querySelector("h2 span").textContent =
+    `${event.requirements.length} reqs · ${event.seconds}s`;
+  card.querySelector(".pending")?.remove();
+  if (event.error) card.append(el("p", "error", event.error));
+
+  for (const r of event.requirements) {
+    const req = el("div", "req");
+    const tags = el("div", "tags");
+    tags.append(el("span", "tag " + (r.quote_found ? "ok" : "bad"),
+                   r.quote_found ? "quote found" : "quote NOT found"));
+    if (r.mandatory) tags.append(el("span", "tag must", "mandatory"));
+    tags.append(el("span", "tag", r.category));
+    req.append(tags, el("div", "", r.description), el("div", "quote", `“${r.quote}”`));
+    card.append(req);
+  }
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  results.innerHTML = "";
+  runBtn.disabled = true;
+  statusEl.textContent = "Reading document…";
+
+  const body = new FormData();
+  body.append("file", document.getElementById("file").files[0]);
+
+  try {
+    const res = await fetch("/extract", { method: "POST", body });
+    if (!res.ok) throw new Error((await res.json()).detail || res.statusText);
+
+    const cards = {};
+    let total = 0, done = 0, reqCount = 0;
+    const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
+    let buffer = "";
+
+    while (true) {
+      const { value, done: finished } = await reader.read();
+      if (finished) break;
+      buffer += value;
+      const lines = buffer.split("\n");
+      buffer = lines.pop();
+
+      for (const line of lines.filter(Boolean)) {
+        const event = JSON.parse(line);
+        if (event.type === "sections") {
+          total = event.sections.length;
+          for (const s of event.sections) {
+            const card = el("div", "section");
+            const h = el("h2", "", `[${s.id}] ${s.title}`);
+            h.append(el("span", "", `${s.chars.toLocaleString()} chars`));
+            card.append(h, el("p", "pending", "Waiting…"));
+            results.append(card);
+            cards[s.id] = card;
+          }
+        } else {
+          done++;
+          reqCount += event.requirements.length;
+          renderSection(cards[event.id], event);
+        }
+        statusEl.textContent = `${done}/${total} sections · ${reqCount} requirements`;
+      }
+    }
+    statusEl.textContent = `Done: ${done}/${total} sections · ${reqCount} requirements`;
+  } catch (err) {
+    statusEl.textContent = "Error: " + err.message;
+  } finally {
+    runBtn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>

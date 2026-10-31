@@ -18,6 +18,7 @@ def load_document(path: str | Path) -> str:
         return "\n".join(p.text for p in doc.paragraphs).strip()
 
     if suffix in {".txt", ".md"}:
-        return path.read_text(encoding="utf-8").strip()
+        # utf-8-sig drops the BOM Windows editors add, which would hide a first-line heading.
+        return path.read_text(encoding="utf-8-sig").strip()
 
     raise ValueError(f"Unsupported file type: {suffix}")
