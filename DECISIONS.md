@@ -68,6 +68,45 @@ Each entry: what I chose, what I considered instead, and why.
 - **Cost:** local inference is free, so cost is estimated at a reference hosted price
   (see ASSUMPTIONS.md).
 
+## Evaluation
+
+### Synthetic brief with planted traps as the gold set
+- **Chose:** a synthetic ITT (`eval/briefs/`) written so every requirement is known, with
+  gold labels in `eval/gold/`. Items are tagged with the failure mode they test.
+- **Instead of:** hand-labelling the real RFPs.
+- **Why:** labels are unambiguous by construction, and each trap targets a failure mode
+  seen on real documents (should vs must, relaxations, permissions, tables). Real RFPs
+  have many borderline items where two labellers would disagree.
+- **Trade-off:** synthetic text is cleaner than real PDFs (no extraction noise, short
+  sections). Next step: label one real RFP to check the scores carry over.
+- **Three gold lists**, not one: `requirements` (recall), `optional` (an invitation like
+  "may propose an SMS option": not counted either way, since reasonable labels differ) and
+  `forbidden` (must not be extracted).
+
+### Matching by quote overlap, not by description
+- **Chose:** match on the quote: share of the shorter quote's content words found in the
+  other (threshold 0.6), one-to-one, best first. Modal verbs and "supplier" are stopwords so
+  the match depends on what the requirement is about; "not" is kept.
+- **Instead of:** embedding similarity or an LLM matcher on descriptions.
+- **Why:** deterministic, free, explainable in one sentence. Quotes come from the source,
+  so they are far more stable than generated descriptions.
+- **Check:** no two gold items overlap at 0.6 or more, so the matcher can't confuse them.
+
+### Light LLM judge, scoring content only
+- **Chose:** the generator model (`qwen/qwen3-8b`) as the judge, configurable with
+  `JUDGE_MODEL`. It checks whether each description states the same content as its quote.
+- **Why light:** it runs on a laptop next to the generator for the demo. In production I'd
+  use a larger model from a different family (self-preference bias), and calibrate it
+  against human verdicts on a sample before trusting its rate.
+- **Iteration (failure mode found):** the first judge also scored obligation strength. It
+  flagged correct imperative descriptions ("Deliver a web platform") as "stronger" or
+  "removes the obligation": 3-4 false alarms out of 25. Giving it the mandatory label
+  moved the errors instead of removing them (it flagged list items whose "must" sits in
+  the lead-in, not the quote). Fix: the judge scores content only, and strength is scored
+  deterministically against gold (mandatory accuracy). False alarms went to 0 of 4 flags.
+- **Known limit:** verdict labels are sometimes wrong even when the flag is right
+  (a dropped condition labelled "stronger" instead of "weaker").
+
 ## Failure modes found
 
 ### Negation flip ("CVs are not required" → "Do not include individual CVs")
@@ -94,6 +133,19 @@ Each entry: what I chose, what I considered instead, and why.
 - **Fix (planned):** inspect whether these are paraphrases or normalisation gaps
   (e.g. table cells, line breaks), then tighten the prompt or the normaliser.
 
+### Found by the eval (synthetic brief, run 20261101-174328)
+- **`mandatory` still over-set:** 71% accuracy; every "should" item and every item under
+  "Each proposal should include:" was marked mandatory (0/3 on the should-vs-must trap).
+- **Forbidden items extracted:** "Individual CVs are not required" (as "Do not require
+  individual CVs"), "consortia are welcome", and the client's own announcement date.
+- **"Desirable but not essential" turned into a requirement** ("Have ISO 27001 certification").
+- **Quote stitched from two table rows:** row 1's milestone with row 2's date. The
+  description had the right date; the quote check flagged it, and so did the judge.
+- **Quotes stitched to list lead-ins:** "The supplier will need to provide: two online
+  training sessions..." is faithful but not verbatim, so 6 of 25 quotes are "not found".
+  Either the check should accept lead-in + item, or the prompt should ask for the item only.
+- **Consistent across runs:** three runs (temperature 0.2) gave identical extraction metrics.
+
 ## Time log
 
 Approximate, from commit timestamps; to be corrected.
@@ -106,6 +158,6 @@ Approximate, from commit timestamps; to be corrected.
 | Requirement extraction with quote check | ~1 h |
 | FastAPI demo page | ~0.5 h |
 | Observability (telemetry, run traces) | ~2 h |
-| Eval harness | — |
+| Eval harness (synthetic gold set, matcher, judge) | ~3 h |
 | Agentic pipeline (planner, risks, critic) | — |
 | Docs and demo | — |
