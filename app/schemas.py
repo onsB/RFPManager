@@ -31,6 +31,13 @@ class SectionRequirement(ExtractedRequirement):
     quote_found: bool = Field(description="True if the quote was found in the section text")
 
 
+class FaithfulnessVerdict(BaseModel):
+    """What the LLM judge returns for one requirement: does the description match its quote?"""
+
+    reason: str = Field(description="One sentence naming the difference, written before the verdict")
+    verdict: Literal["same", "weaker", "stronger", "contradicts", "unsupported"]
+
+
 class PlannedPhase(BaseModel):
     # Ids first: the model picks the requirements before writing about them.
     requirement_ids: list[str] = Field(description="Ids of the requirements this phase delivers")
