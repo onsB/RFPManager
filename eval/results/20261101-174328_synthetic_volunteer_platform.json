@@ -1,0 +1,540 @@
+{
+  "run_id": "20261101-174328",
+  "gold_file": "eval/gold/synthetic_volunteer_platform.json",
+  "document": "eval/briefs/synthetic_volunteer_platform.md",
+  "git_commit": "d7e0475-dirty",
+  "extract_prompt_sha": "b9053de8",
+  "model": "qwen/qwen3-8b",
+  "judge_model": "qwen/qwen3-8b",
+  "temperature": 0.2,
+  "judge_used": true,
+  "sections": 7,
+  "metrics": {
+    "gold_requirements": 21,
+    "predicted": 25,
+    "true_positives": 21,
+    "false_positives": 3,
+    "missed": 0,
+    "precision": 0.875,
+    "recall": 1.0,
+    "f1": 0.933,
+    "mandatory_accuracy": 0.714,
+    "category_accuracy": 0.857,
+    "quote_found_rate": 0.72,
+    "faithfulness_rate": 0.84,
+    "verdicts": {
+      "same": 21,
+      "stronger": 3,
+      "contradicts": 1
+    },
+    "match_kinds": {
+      "tp": 21,
+      "optional": 1,
+      "forbidden": 3
+    }
+  },
+  "traps": [
+    {
+      "gold_id": "G03",
+      "trap": "should_not_must",
+      "quote": "The platform should send reminder emails to volunteers 24 hours before each shift",
+      "passed": false,
+      "why": "mandatory=True, expected False"
+    },
+    {
+      "gold_id": "G04",
+      "trap": "should_not_must",
+      "quote": "Pages should load in under 2 seconds on a standard 4G connection",
+      "passed": false,
+      "why": "mandatory=True, expected False"
+    },
+    {
+      "gold_id": "G05",
+      "trap": "list_split",
+      "quote": "two online training sessions for charity staff",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "G06",
+      "trap": "list_split",
+      "quote": "a written user guide for volunteers",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "G07",
+      "trap": "list_split",
+      "quote": "three months of post-launch support",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "G08",
+      "trap": "two_in_one_paragraph",
+      "quote": "The supplier must comply with UK GDPR",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "G09",
+      "trap": "two_in_one_paragraph",
+      "quote": "A data processing agreement must be signed before any personal data is shared",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "G11",
+      "trap": "prohibition",
+      "quote": "The supplier must not use volunteers' personal data for marketing or to train AI models",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "G13",
+      "trap": "desirable_not_essential",
+      "quote": "ISO 27001 certification is desirable but not essential",
+      "passed": false,
+      "why": "description contradicts: The description requires ISO 27001 certification, while the quote states it is desirable but not essential."
+    },
+    {
+      "gold_id": "G14",
+      "trap": "budget_cap",
+      "quote": "Bids must not exceed £60,000 excluding VAT, including all licences and support for the first year",
+      "passed": false,
+      "why": "description stronger: The description omits the requirement to include all licences and support for the first year."
+    },
+    {
+      "gold_id": "G15",
+      "trap": "in_table",
+      "quote": "Platform live for five pilot charities | 31 March 2027",
+      "passed": false,
+      "why": "description stronger: The description adds a specific deadline (31 March 2027) that is earlier than the quote's date (30 June 2027)."
+    },
+    {
+      "gold_id": "G16",
+      "trap": "in_table",
+      "quote": "Full launch to all member charities | 30 June 2027",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "G18",
+      "trap": "should_not_must",
+      "quote": "Proposals should not exceed 10 pages",
+      "passed": false,
+      "why": "mandatory=True, expected False"
+    },
+    {
+      "gold_id": "G19",
+      "trap": "list_split",
+      "quote": "a delivery plan with milestones",
+      "passed": false,
+      "why": "mandatory=True, expected False"
+    },
+    {
+      "gold_id": "G20",
+      "trap": "list_split",
+      "quote": "a fixed price breakdown",
+      "passed": false,
+      "why": "mandatory=True, expected False"
+    },
+    {
+      "gold_id": "G21",
+      "trap": "list_split",
+      "quote": "two references from similar projects",
+      "passed": false,
+      "why": "mandatory=True, expected False"
+    },
+    {
+      "gold_id": "N01",
+      "trap": "client_goal",
+      "quote": "We aim to double the number of active volunteers in the borough by 2030",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "N02",
+      "trap": "relaxation",
+      "quote": "A native mobile app is not required",
+      "passed": true,
+      "why": ""
+    },
+    {
+      "gold_id": "N03",
+      "trap": "relaxation",
+      "quote": "Individual CVs are not required",
+      "passed": false,
+      "why": "extracted as S07-R06: Do not require individual CVs"
+    },
+    {
+      "gold_id": "N04",
+      "trap": "permission_or_option",
+      "quote": "Applications from consortia are welcome",
+      "passed": false,
+      "why": "extracted as S07-R07: Accept applications from consortia"
+    },
+    {
+      "gold_id": "N05",
+      "trap": "client_timeline",
+      "quote": "We expect to announce the outcome in February 2027",
+      "passed": false,
+      "why": "extracted as S07-R08: Announce outcome by February 2027"
+    }
+  ],
+  "missed": [],
+  "predictions": [
+    {
+      "description": "Deliver a web platform where charities can post volunteering opportunities and volunteers can sign up for shifts.",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "The supplier must deliver a web platform where charities can post volunteering opportunities and volunteers can sign up for shifts.",
+      "id": "S03-R01",
+      "section_id": "S03",
+      "quote_found": true,
+      "gold_id": "G01",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The description is a direct restatement of the quote."
+    },
+    {
+      "description": "Ensure the platform meets WCAG 2.2 AA accessibility standards.",
+      "category": "non-functional",
+      "mandatory": true,
+      "quote": "The platform must meet WCAG 2.2 AA accessibility standards.",
+      "id": "S03-R02",
+      "section_id": "S03",
+      "quote_found": true,
+      "gold_id": "G02",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The description is a direct command to ensure the platform meets WCAG 2.2 AA standards, which matches the quote's assertion that the platform must meet those standards."
+    },
+    {
+      "description": "Send reminder emails to volunteers 24 hours before each shift.",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "The platform should send reminder emails to volunteers 24 hours before each shift.",
+      "id": "S03-R03",
+      "section_id": "S03",
+      "quote_found": true,
+      "gold_id": "G03",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The description is a direct restatement of the quote."
+    },
+    {
+      "description": "Ensure pages load in under 2 seconds on a standard 4G connection.",
+      "category": "non-functional",
+      "mandatory": true,
+      "quote": "Pages should load in under 2 seconds on a standard 4G connection.",
+      "id": "S03-R04",
+      "section_id": "S03",
+      "quote_found": true,
+      "gold_id": "G04",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The quote uses 'should' while the description is a command, but both require pages to load under 2 seconds on 4G."
+    },
+    {
+      "description": "Propose an SMS notification feature as a separately priced option.",
+      "category": "commercial",
+      "mandatory": false,
+      "quote": "The supplier may also propose an SMS notification feature as a separately priced option.",
+      "id": "S03-R05",
+      "section_id": "S03",
+      "quote_found": true,
+      "gold_id": "O01",
+      "match": "optional",
+      "verdict": "stronger",
+      "verdict_reason": "The quote allows the supplier to propose the feature as an option, while the description requires it."
+    },
+    {
+      "description": "Provide two online training sessions for charity staff",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "The supplier will need to provide: two online training sessions for charity staff",
+      "id": "S04-R01",
+      "section_id": "S04",
+      "quote_found": false,
+      "gold_id": "G05",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The description matches the quote exactly."
+    },
+    {
+      "description": "Provide a written user guide for volunteers",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "The supplier will need to provide: a written user guide for volunteers",
+      "id": "S04-R02",
+      "section_id": "S04",
+      "quote_found": false,
+      "gold_id": "G06",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content"
+    },
+    {
+      "description": "Provide three months of post-launch support",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "The supplier will need to provide: three months of post-launch support",
+      "id": "S04-R03",
+      "section_id": "S04",
+      "quote_found": false,
+      "gold_id": "G07",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content"
+    },
+    {
+      "description": "Comply with UK GDPR",
+      "category": "compliance",
+      "mandatory": true,
+      "quote": "The supplier must comply with UK GDPR.",
+      "id": "S05-R01",
+      "section_id": "S05",
+      "quote_found": true,
+      "gold_id": "G08",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content"
+    },
+    {
+      "description": "Sign data processing agreement before sharing personal data",
+      "category": "compliance",
+      "mandatory": true,
+      "quote": "A data processing agreement must be signed before any personal data is shared.",
+      "id": "S05-R02",
+      "section_id": "S05",
+      "quote_found": true,
+      "gold_id": "G09",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content, just restated with imperative form"
+    },
+    {
+      "description": "Store all personal data in the UK",
+      "category": "compliance",
+      "mandatory": true,
+      "quote": "All personal data must be stored in the UK.",
+      "id": "S05-R03",
+      "section_id": "S05",
+      "quote_found": true,
+      "gold_id": "G10",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content"
+    },
+    {
+      "description": "Not use volunteers' personal data for marketing or AI training",
+      "category": "compliance",
+      "mandatory": true,
+      "quote": "The supplier must not use volunteers' personal data for marketing or to train AI models.",
+      "id": "S05-R04",
+      "section_id": "S05",
+      "quote_found": true,
+      "gold_id": "G11",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The description is a direct restatement of the quote with the same content and conditions."
+    },
+    {
+      "description": "Hold professional indemnity insurance of at least £1 million",
+      "category": "compliance",
+      "mandatory": true,
+      "quote": "The supplier must hold professional indemnity insurance of at least £1 million.",
+      "id": "S05-R05",
+      "section_id": "S05",
+      "quote_found": true,
+      "gold_id": "G12",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The description is a direct restatement of the quote."
+    },
+    {
+      "description": "Have ISO 27001 certification",
+      "category": "compliance",
+      "mandatory": false,
+      "quote": "ISO 27001 certification is desirable but not essential.",
+      "id": "S05-R06",
+      "section_id": "S05",
+      "quote_found": true,
+      "gold_id": "G13",
+      "match": "tp",
+      "verdict": "contradicts",
+      "verdict_reason": "The description requires ISO 27001 certification, while the quote states it is desirable but not essential."
+    },
+    {
+      "description": "Submit a bid not exceeding £60,000 excluding VAT",
+      "category": "commercial",
+      "mandatory": true,
+      "quote": "Bids must not exceed £60,000 excluding VAT, including all licences and support for the first year.",
+      "id": "S06-R01",
+      "section_id": "S06",
+      "quote_found": true,
+      "gold_id": "G14",
+      "match": "tp",
+      "verdict": "stronger",
+      "verdict_reason": "The description omits the requirement to include all licences and support for the first year."
+    },
+    {
+      "description": "Deliver a platform live for five pilot charities by 31 March 2027",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "Platform live for five pilot charities | 30 June 2027",
+      "id": "S06-R02",
+      "section_id": "S06",
+      "quote_found": false,
+      "gold_id": "G15",
+      "match": "tp",
+      "verdict": "stronger",
+      "verdict_reason": "The description adds a specific deadline (31 March 2027) that is earlier than the quote's date (30 June 2027)."
+    },
+    {
+      "description": "Deliver a full launch to all member charities by 30 June 2027",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "Full launch to all member charities | 30 June 2027",
+      "id": "S06-R03",
+      "section_id": "S06",
+      "quote_found": true,
+      "gold_id": "G16",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The description matches the quote exactly."
+    },
+    {
+      "description": "Submit proposals through the Trust's procurement portal by 5pm on 15 January 2027",
+      "category": "commercial",
+      "mandatory": true,
+      "quote": "Proposals must be submitted through the Trust's procurement portal by 5pm on 15 January 2027.",
+      "id": "S07-R01",
+      "section_id": "S07",
+      "quote_found": true,
+      "gold_id": "G17",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content"
+    },
+    {
+      "description": "Limit proposals to 10 pages",
+      "category": "commercial",
+      "mandatory": true,
+      "quote": "Proposals should not exceed 10 pages.",
+      "id": "S07-R02",
+      "section_id": "S07",
+      "quote_found": true,
+      "gold_id": "G18",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content, different wording"
+    },
+    {
+      "description": "Include a delivery plan with milestones",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "Each proposal should include: a delivery plan with milestones",
+      "id": "S07-R03",
+      "section_id": "S07",
+      "quote_found": false,
+      "gold_id": "G19",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "The description is a direct restatement of the quote."
+    },
+    {
+      "description": "Include a fixed price breakdown",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "Each proposal should include: a fixed price breakdown",
+      "id": "S07-R04",
+      "section_id": "S07",
+      "quote_found": false,
+      "gold_id": "G20",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content"
+    },
+    {
+      "description": "Include two references from similar projects",
+      "category": "functional",
+      "mandatory": true,
+      "quote": "Each proposal should include: two references from similar projects",
+      "id": "S07-R05",
+      "section_id": "S07",
+      "quote_found": false,
+      "gold_id": "G21",
+      "match": "tp",
+      "verdict": "same",
+      "verdict_reason": "same content"
+    },
+    {
+      "description": "Do not require individual CVs",
+      "category": "commercial",
+      "mandatory": true,
+      "quote": "Individual CVs are not required.",
+      "id": "S07-R06",
+      "section_id": "S07",
+      "quote_found": true,
+      "gold_id": "N03",
+      "match": "forbidden",
+      "verdict": "same",
+      "verdict_reason": "Same content, both state that individual CVs are not required."
+    },
+    {
+      "description": "Accept applications from consortia",
+      "category": "commercial",
+      "mandatory": true,
+      "quote": "Applications from consortia are welcome.",
+      "id": "S07-R07",
+      "section_id": "S07",
+      "quote_found": true,
+      "gold_id": "N04",
+      "match": "forbidden",
+      "verdict": "same",
+      "verdict_reason": "same content"
+    },
+    {
+      "description": "Announce outcome by February 2027",
+      "category": "non-functional",
+      "mandatory": true,
+      "quote": "We expect to announce the outcome in February 2027.",
+      "id": "S07-R08",
+      "section_id": "S07",
+      "quote_found": true,
+      "gold_id": "N05",
+      "match": "forbidden",
+      "verdict": "same",
+      "verdict_reason": "The quote specifies a deadline of February 2027, and the description matches this deadline."
+    }
+  ],
+  "errors": {},
+  "usage": {
+    "total": {
+      "calls": 32,
+      "prompt_tokens": 9312,
+      "completion_tokens": 1814,
+      "latency_s": 101.5,
+      "tokens_per_s": 17.9,
+      "cost_usd": 0.002946
+    },
+    "by_step": {
+      "extract": {
+        "calls": 7,
+        "prompt_tokens": 2746,
+        "completion_tokens": 1205,
+        "latency_s": 64.0,
+        "cost_usd": 0.001338
+      },
+      "judge": {
+        "calls": 25,
+        "prompt_tokens": 6566,
+        "completion_tokens": 609,
+        "latency_s": 37.5,
+        "cost_usd": 0.001608
+      }
+    }
+  }
+}
