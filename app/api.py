@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse, StreamingResponse
 from app.agent import extract_requirements
 from app.documents import load_document
 from app.sections import split_sections
+from app.telemetry import RunTrace
 
 STATIC_DIR = Path(__file__).parent / "static"
 SUPPORTED = {".pdf", ".docx", ".txt", ".md"}
@@ -41,6 +42,7 @@ def extract(file: UploadFile) -> StreamingResponse:
         Path(tmp.name).unlink(missing_ok=True)
 
     def events():
+        trace = RunTrace()
         yield json.dumps({
             "type": "sections",
             "sections": [{"id": s.id, "title": s.breadcrumb, "chars": s.char_count} for s in sections],
@@ -49,7 +51,7 @@ def extract(file: UploadFile) -> StreamingResponse:
         for section in sections:
             start = time.perf_counter()
             try:
-                requirements = [r.model_dump() for r in extract_requirements(section)]
+                requirements = [r.model_dump() for r in extract_requirements(section, trace)]
                 error = None
             except Exception as exc:  # one failing section should not stop the run
                 requirements, error = [], str(exc)
@@ -60,7 +62,14 @@ def extract(file: UploadFile) -> StreamingResponse:
                 "seconds": round(time.perf_counter() - start, 1),
                 "requirements": requirements,
                 "error": error,
+                "usage": trace.calls[-1].model_dump()
             }) + "\n"
+
+        yield json.dumps({
+            "type": "done",
+            "totals": trace.totals(),
+            "run_id": trace.run_id
+        }) + "\n"
 
     return StreamingResponse(events(), media_type="application/x-ndjson")
 

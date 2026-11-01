@@ -5,6 +5,7 @@ from pathlib import Path
 from app.agent import extract_requirements
 from app.documents import load_document
 from app.sections import split_sections
+from app.telemetry import RunTrace
 
 # Edit these to test from VS Code: press Run (or F5), no terminal arguments needed.
 RFP_PATH = Path(__file__).parent.parent / "inputs" / "InvitationtoTender_CommunitiesofPracticeDevelopment.pdf"
@@ -17,13 +18,14 @@ def main() -> None:
     text = load_document(path)
     sections = split_sections(text)  # also merges small and splits long sections
     print(f"{len(sections)} sections: {', '.join(s.id for s in sections)}\n")
+    trace = RunTrace()
 
     for section in sections:
         if SECTION_IDS and section.id not in SECTION_IDS:
             continue
 
         start = time.perf_counter()
-        requirements = extract_requirements(section)
+        requirements = extract_requirements(section, trace)
         elapsed = time.perf_counter() - start
 
         print(f"## [{section.id}] {section.breadcrumb}  ({len(requirements)} reqs, {elapsed:.1f}s)")

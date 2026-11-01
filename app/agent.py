@@ -1,9 +1,11 @@
 import re
 
+from docx import section
 from openai import OpenAI
 
 from app.config import settings
 from app.schemas import DocumentSection, SectionExtraction, SectionRequirement, SolutionSummary
+from app.telemetry import RunTrace, traced_completion
 
 EXTRACT_PROMPT = """You extract requirements from ONE section of a Request for Proposal (RFP).
 
@@ -45,9 +47,10 @@ def _normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def extract_requirements(section: DocumentSection) -> list[SectionRequirement]:
+def extract_requirements(section: DocumentSection, trace: RunTrace | None) -> list[SectionRequirement]:
     """Extracts the requirements stated in one section and checks each quote against it."""
-    response = client.chat.completions.create(
+    response = traced_completion(
+        client, trace, step="extract", section_id=section.id,
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         messages=[
@@ -77,10 +80,11 @@ def extract_requirements(section: DocumentSection) -> list[SectionRequirement]:
     ]
 
 
-def summarize_rfp(document_text: str) -> SolutionSummary:
+def summarize_rfp(document_text: str, trace: RunTrace | None) -> SolutionSummary:
     text = document_text[: settings.max_document_chars]
 
-    response = client.chat.completions.create(
+    response = traced_completion(
+        client, trace, step="summarize", section_id=section.id,
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         messages=[
