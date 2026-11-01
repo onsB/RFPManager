@@ -1,40 +1,31 @@
 import re
+from pathlib import Path
 
 from openai import OpenAI
 
 from app.config import settings
-from app.schemas import DocumentSection, SectionExtraction, SectionRequirement, SolutionSummary
+from app.schemas import (
+    DocumentSection,
+    RFPSummary,
+    SectionExtraction,
+    SectionRequirement,
+    SolutionSummary,
+    Synthesis,
+)
+from app.telemetry import RunTrace, traced_completion
 
-EXTRACT_PROMPT = """You extract requirements from ONE section of a Request for Proposal (RFP).
+PROMPTS_DIR = Path(__file__).parent / "prompts"  # notes on each prompt: prompts/README.md
 
-A requirement is something the supplier must do, deliver, provide or comply with,
-or a constraint on the bid itself (deadline, budget, format, eligibility).
-NOT requirements: background on the client, the client's own goals or history,
-unless the text turns them into something the supplier must do.
 
-Rules:
-- One requirement per obligation. Split lists into separate requirements.
-- description: one self-contained sentence starting with a verb ("Deliver...", "Submit...").
-  Do not write "this", "the above" or "as described"; name the thing.
-- mandatory: true only for must / shall / required / mandatory / will need to.
-  false for should / may / desirable / would like / ideally.
-- quote: copy the shortest span of the section text (max 30 words) that states the
-  requirement, character for character. Never paraphrase or combine sentences.
-- category:
-  functional = what the supplier delivers or does
-  non-functional = quality, accessibility, timing or performance of the delivery
-  compliance = legal, policy, insurance, data protection, certifications
-  commercial = budget, pricing, payment, contract terms, submission logistics
-  other = anything else
-- Use only this section. If it contains no requirements, return an empty list;
-  that is a correct answer, not a failure."""
+def _load_prompt(name: str) -> str:
+    return (PROMPTS_DIR / f"{name}.md").read_text(encoding="utf-8").strip()
 
-SYSTEM_PROMPT = """You are a pre-sales solution architect analysing a Request for Proposal (RFP).
-Read the RFP and produce a structured solution summary:
-- requirements: every concrete requirement stated in the RFP. Do not invent any.
-- approach: the phases of a delivery approach that satisfies those requirements.
-- risks: delivery, technical, and commercial risks, each with a mitigation.
-Base everything on the document. If something is not stated, say "not specified"."""
+
+EXTRACT_PROMPT = _load_prompt("extract")
+SYNTHESIZE_PROMPT = _load_prompt("synthesize")
+SYSTEM_PROMPT = _load_prompt("baseline")
+
+OPENING_CHARS = 3_000  # how much of the document the synthesis sees, for title and client
 
 client = OpenAI(base_url=settings.llm_base_url, api_key=settings.llm_api_key)
 
@@ -45,9 +36,10 @@ def _normalize(text: str) -> str:
     return re.sub(r"\s+", " ", text).strip()
 
 
-def extract_requirements(section: DocumentSection) -> list[SectionRequirement]:
+def extract_requirements(section: DocumentSection, trace: RunTrace | None) -> list[SectionRequirement]:
     """Extracts the requirements stated in one section and checks each quote against it."""
-    response = client.chat.completions.create(
+    response = traced_completion(
+        client, trace, step="extract", section_id=section.id, section_title=section.breadcrumb,
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         messages=[
@@ -70,17 +62,75 @@ def extract_requirements(section: DocumentSection) -> list[SectionRequirement]:
     return [
         SectionRequirement(
             **req.model_dump(),
+            id=f"{section.id}-R{i:02d}",
             section_id=section.id,
             quote_found=_normalize(req.quote) in section_text,
         )
-        for req in extraction.requirements
+        for i, req in enumerate(extraction.requirements, start=1)
     ]
 
 
-def summarize_rfp(document_text: str) -> SolutionSummary:
+def synthesize_summary(
+    sections: list[DocumentSection],
+    requirements: list[SectionRequirement],
+    trace: RunTrace | None,
+) -> RFPSummary:
+    """Writes the overview, approach and risks from the extracted requirements, then checks the cited ids.
+
+    The model sees the requirement list, not the whole document: it plans from what was
+    extracted and verified, and every phase and risk must cite requirement ids.
+    """
+    opening = "\n\n".join(s.text for s in sections)[:OPENING_CHARS]
+    requirement_lines = "\n".join(
+        f"{r.id} [{r.category}, {'mandatory' if r.mandatory else 'optional'}] {r.description}"
+        for r in requirements
+    )
+
+    response = traced_completion(
+        client, trace, step="synthesize",
+        model=settings.llm_model,
+        temperature=settings.llm_temperature,
+        messages=[
+            {"role": "system", "content": SYNTHESIZE_PROMPT},
+            {"role": "user", "content": (
+                f"## Document opening\n\n{opening}\n\n"
+                f"## Extracted requirements\n\n{requirement_lines}\n\n/no_think"
+            )},
+        ],
+        response_format={
+            "type": "json_schema",
+            "json_schema": {
+                "name": "synthesis",
+                "schema": Synthesis.model_json_schema(),
+                "strict": True,
+            },
+        },
+    )
+    synthesis = Synthesis.model_validate_json(response.choices[0].message.content)
+
+    # Grounding check: drop ids the model made up, and record them so the eval can count them.
+    known_ids = {r.id for r in requirements}
+    unknown_ids: set[str] = set()
+    for item in [*synthesis.approach, *synthesis.risks]:
+        unknown_ids.update(i for i in item.requirement_ids if i not in known_ids)
+        item.requirement_ids = [i for i in item.requirement_ids if i in known_ids]
+
+    covered = {i for phase in synthesis.approach for i in phase.requirement_ids}
+    uncovered_mandatory = [r.id for r in requirements if r.mandatory and r.id not in covered]
+
+    return RFPSummary(
+        **synthesis.model_dump(),
+        requirements=requirements,
+        unknown_ids=sorted(unknown_ids),
+        uncovered_mandatory=uncovered_mandatory,
+    )
+
+
+def summarize_rfp(document_text: str, trace: RunTrace | None) -> SolutionSummary:
     text = document_text[: settings.max_document_chars]
 
-    response = client.chat.completions.create(
+    response = traced_completion(
+        client, trace, step="summarize",  # whole document, so no section_id
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         messages=[

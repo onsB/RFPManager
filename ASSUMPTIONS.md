@@ -18,3 +18,8 @@
 ## Environment
 - The LLM runs locally (LM Studio, OpenAI-compatible API). No paid API is required.
 - Cost is reported as an estimate at reference hosted prices, since local inference is free.
+  Reference: Qwen3 8B at $0.18 / 1M input and $0.70 / 1M output tokens, Alibaba's listed
+  price as shown on [TypingMind's cost estimator](https://custom.typingmind.com/tools/estimate-llm-usage-costs/alibaba/qwen3-8b)
+  (checked 2026-10-31). Other hosts list $0.05–$0.12 input, so this is an upper estimate.
+  Prices are set in `app/config.py`.
+- Latency is wall-clock time on the local machine (GPU-dependent), not comparable to a hosted API.

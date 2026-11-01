@@ -1,14 +1,12 @@
 import json
 import tempfile
-import time
 from pathlib import Path
 
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.responses import FileResponse, StreamingResponse
 
-from app.agent import extract_requirements
 from app.documents import load_document
-from app.sections import split_sections
+from app.pipeline import run_pipeline
 
 STATIC_DIR = Path(__file__).parent / "static"
 SUPPORTED = {".pdf", ".docx", ".txt", ".md"}
@@ -23,10 +21,10 @@ def index() -> FileResponse:
 
 @app.post("/extract")
 def extract(file: UploadFile) -> StreamingResponse:
-    """Extracts requirements section by section, streaming one JSON line per event.
+    """Runs the pipeline on an uploaded RFP, streaming each event as one JSON line.
 
-    Events: {"type": "sections", ...} first, then one {"type": "section", ...} per
-    section as it finishes, so the page shows progress instead of waiting minutes.
+    The page shows each section as it finishes instead of waiting minutes for the run.
+    Event types are documented in app/pipeline.py.
     """
     suffix = Path(file.filename or "").suffix.lower()
     if suffix not in SUPPORTED:
@@ -36,33 +34,12 @@ def extract(file: UploadFile) -> StreamingResponse:
     with tempfile.NamedTemporaryFile(suffix=suffix, delete=False) as tmp:
         tmp.write(file.file.read())
     try:
-        sections = split_sections(load_document(tmp.name))
+        text = load_document(tmp.name)
     finally:
         Path(tmp.name).unlink(missing_ok=True)
 
-    def events():
-        yield json.dumps({
-            "type": "sections",
-            "sections": [{"id": s.id, "title": s.breadcrumb, "chars": s.char_count} for s in sections],
-        }) + "\n"
-
-        for section in sections:
-            start = time.perf_counter()
-            try:
-                requirements = [r.model_dump() for r in extract_requirements(section)]
-                error = None
-            except Exception as exc:  # one failing section should not stop the run
-                requirements, error = [], str(exc)
-            yield json.dumps({
-                "type": "section",
-                "id": section.id,
-                "title": section.breadcrumb,
-                "seconds": round(time.perf_counter() - start, 1),
-                "requirements": requirements,
-                "error": error,
-            }) + "\n"
-
-    return StreamingResponse(events(), media_type="application/x-ndjson")
+    events = run_pipeline(text, document=file.filename or "upload")
+    return StreamingResponse((json.dumps(e) + "\n" for e in events), media_type="application/x-ndjson")
 
 
 if __name__ == "__main__":
