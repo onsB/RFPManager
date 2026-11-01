@@ -1,42 +1,21 @@
 import re
+from pathlib import Path
 
-from docx import section
 from openai import OpenAI
 
 from app.config import settings
 from app.schemas import DocumentSection, SectionExtraction, SectionRequirement, SolutionSummary
 from app.telemetry import RunTrace, traced_completion
 
-EXTRACT_PROMPT = """You extract requirements from ONE section of a Request for Proposal (RFP).
+PROMPTS_DIR = Path(__file__).parent / "prompts"  # notes on each prompt: prompts/README.md
 
-A requirement is something the supplier must do, deliver, provide or comply with,
-or a constraint on the bid itself (deadline, budget, format, eligibility).
-NOT requirements: background on the client, the client's own goals or history,
-unless the text turns them into something the supplier must do.
 
-Rules:
-- One requirement per obligation. Split lists into separate requirements.
-- description: one self-contained sentence starting with a verb ("Deliver...", "Submit...").
-  Do not write "this", "the above" or "as described"; name the thing.
-- mandatory: true only for must / shall / required / mandatory / will need to.
-  false for should / may / desirable / would like / ideally.
-- quote: copy the shortest span of the section text (max 30 words) that states the
-  requirement, character for character. Never paraphrase or combine sentences.
-- category:
-  functional = what the supplier delivers or does
-  non-functional = quality, accessibility, timing or performance of the delivery
-  compliance = legal, policy, insurance, data protection, certifications
-  commercial = budget, pricing, payment, contract terms, submission logistics
-  other = anything else
-- Use only this section. If it contains no requirements, return an empty list;
-  that is a correct answer, not a failure."""
+def _load_prompt(name: str) -> str:
+    return (PROMPTS_DIR / f"{name}.md").read_text(encoding="utf-8").strip()
 
-SYSTEM_PROMPT = """You are a pre-sales solution architect analysing a Request for Proposal (RFP).
-Read the RFP and produce a structured solution summary:
-- requirements: every concrete requirement stated in the RFP. Do not invent any.
-- approach: the phases of a delivery approach that satisfies those requirements.
-- risks: delivery, technical, and commercial risks, each with a mitigation.
-Base everything on the document. If something is not stated, say "not specified"."""
+
+EXTRACT_PROMPT = _load_prompt("extract")
+SYSTEM_PROMPT = _load_prompt("baseline")
 
 client = OpenAI(base_url=settings.llm_base_url, api_key=settings.llm_api_key)
 
@@ -84,7 +63,7 @@ def summarize_rfp(document_text: str, trace: RunTrace | None) -> SolutionSummary
     text = document_text[: settings.max_document_chars]
 
     response = traced_completion(
-        client, trace, step="summarize", section_id=section.id,
+        client, trace, step="summarize",  # whole document, so no section_id
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         messages=[

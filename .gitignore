@@ -3,5 +3,8 @@
 __pycache__/
 *.pyc
 data/
-app/explore.ipynb
+notebooks/explore.ipynb
 .claude/settings.local.json
+
+# Run traces; keep sample runs with `git add -f runs/<file>.json`
+runs/

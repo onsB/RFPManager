@@ -13,9 +13,10 @@ class Settings(BaseSettings):
     max_document_chars: int = 40_000
     max_section_chars: int = 8_000  # ~2k tokens per section
 
-    # Local inference is free; cost is estimated at a hosted provider's price for the same model.
-    price_in_per_1m: float = 0.0   # USD per 1M prompt tokens
-    price_out_per_1m: float = 0.0  # USD per 1M completion tokens
+    # Local inference is free; cost is estimated at Alibaba's hosted price for Qwen3 8B
+    # (source and date in ASSUMPTIONS.md). Change both when switching models.
+    price_in_per_1m: float = 0.18   # USD per 1M prompt tokens
+    price_out_per_1m: float = 0.70  # USD per 1M completion tokens
 
 
 settings = Settings()

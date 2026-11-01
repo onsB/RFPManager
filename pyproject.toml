@@ -1,7 +1,7 @@
 [project]
 name = "rfpmanager"
 version = "0.1.0"
-description = "Add your description here"
+description = "Agentic RFP analyser: extracts requirements, approach and risks with a local LLM"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

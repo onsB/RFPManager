@@ -37,7 +37,7 @@ structured output works; to try another one, change this value only.
 |---|---|---|
 | `LLM_BASE_URL` | `http://localhost:1234/v1` | OpenAI-compatible endpoint (LM Studio) |
 | `LLM_API_KEY` | `lm-studio` | Ignored by LM Studio, required by the SDK |
-| `LLM_MODEL` | `qwen3-8b` | Model identifier in LM Studio |
+| `LLM_MODEL` | `qwen/qwen3-8b` | Model identifier in LM Studio |
 
 ### 4. Run
 
