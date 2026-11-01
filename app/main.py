@@ -18,7 +18,7 @@ def main() -> None:
     text = load_document(path)
     sections = split_sections(text)  # also merges small and splits long sections
     print(f"{len(sections)} sections: {', '.join(s.id for s in sections)}\n")
-    trace = RunTrace()
+    trace = RunTrace(document=Path(path).name)
 
     for section in sections:
         if SECTION_IDS and section.id not in SECTION_IDS:

@@ -10,7 +10,8 @@ RUNS_DIR = Path(__file__).parent.parent / "runs"  # <project>/runs, wherever the
 class CallRecord(BaseModel):
     """measure tokens, latency, price, and timestamp for a single LLM call"""
     step: str
-    section_id: str | None 
+    section_id: str | None
+    section_title: str | None = None
     model: str
     prompt_tokens: int
     completion_tokens: int
@@ -22,6 +23,11 @@ class RunTrace(BaseModel):
     """an LLM run trace saved to runs/{run_id}.json, for later analysis"""
 
     run_id: str = Field(default_factory=lambda: datetime.now().strftime("%Y%m%d-%H%M%S"))
+    document: str
+    model: str = settings.llm_model
+    temperature: float = settings.llm_temperature
+    max_document_chars: int = settings.max_document_chars
+    max_section_chars: int = settings.max_section_chars  # changes how sections are split, so what S12 means
     calls: list[CallRecord] = []
 
 
@@ -40,11 +46,11 @@ class RunTrace(BaseModel):
         }
 
     def save(self, directory: str | Path = RUNS_DIR) -> Path:
-        """Writes the whole run (totals first, then every call) to one JSON file."""
+        """Writes the whole run (settings, totals, then every call) to one JSON file."""
         path = Path(directory) / f"{self.run_id}.json"
         path.parent.mkdir(exist_ok=True)
         data = {
-            "run_id": self.run_id,
+            **self.model_dump(exclude={"calls"}),  # run_id, document, model, settings
             "totals": self.totals(),
             "calls": [c.model_dump() for c in self.calls],
         }
@@ -52,7 +58,14 @@ class RunTrace(BaseModel):
         return path
 
 
-def traced_completion(client, trace: RunTrace | None, step: str, section_id: str | None = None, **kwargs):
+def traced_completion(
+    client,
+    trace: RunTrace | None,
+    step: str,
+    section_id: str | None = None,
+    section_title: str | None = None,
+    **kwargs,
+):
     """wraps the LLM run to record tokens, latency, and cost in a RunTrace"""
     start = time.perf_counter()
     result = client.chat.completions.create(**kwargs)
@@ -68,6 +81,7 @@ def traced_completion(client, trace: RunTrace | None, step: str, section_id: str
             CallRecord(
                 step=step,
                 section_id=section_id,
+                section_title=section_title,
                 model=result.model,
                 prompt_tokens=prompt,
                 completion_tokens=completion,

@@ -42,7 +42,7 @@ def extract(file: UploadFile) -> StreamingResponse:
         Path(tmp.name).unlink(missing_ok=True)
 
     def events():
-        trace = RunTrace()
+        trace = RunTrace(document=file.filename or "upload")
         yield json.dumps({
             "type": "sections",
             "sections": [{"id": s.id, "title": s.breadcrumb, "chars": s.char_count} for s in sections],

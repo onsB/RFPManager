@@ -29,7 +29,7 @@ def _normalize(text: str) -> str:
 def extract_requirements(section: DocumentSection, trace: RunTrace | None) -> list[SectionRequirement]:
     """Extracts the requirements stated in one section and checks each quote against it."""
     response = traced_completion(
-        client, trace, step="extract", section_id=section.id,
+        client, trace, step="extract", section_id=section.id, section_title=section.breadcrumb,
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         messages=[
