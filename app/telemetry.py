@@ -1,8 +1,11 @@
+import json
 import time
 from datetime import datetime
 from pathlib import Path
 from pydantic import BaseModel, Field
 from app.config import settings
+
+RUNS_DIR = Path(__file__).parent.parent / "runs"  # <project>/runs, wherever the app is started from
 
 class CallRecord(BaseModel):
     """measure tokens, latency, price, and timestamp for a single LLM call"""
@@ -31,15 +34,21 @@ class RunTrace(BaseModel):
             "calls": len(self.calls),
             "prompt_tokens": prompt,
             "completion_tokens": completion,
-            "latency_s": latency,
+            "latency_s": round(latency, 1),
             "tokens_per_s": tokens_per_s,
             "cost_usd": round(sum(c.cost_usd for c in self.calls), 6)
         }
 
-    def save(self, directory: str | Path) -> Path:
+    def save(self, directory: str | Path = RUNS_DIR) -> Path:
+        """Writes the whole run (totals first, then every call) to one JSON file."""
         path = Path(directory) / f"{self.run_id}.json"
         path.parent.mkdir(exist_ok=True)
-        path.write_text("".join(c.model_dump_json() + "\n" for c in self.calls), encoding="utf-8")
+        data = {
+            "run_id": self.run_id,
+            "totals": self.totals(),
+            "calls": [c.model_dump() for c in self.calls],
+        }
+        path.write_text(json.dumps(data, indent=2), encoding="utf-8")
         return path
 
 

@@ -65,10 +65,12 @@ def extract(file: UploadFile) -> StreamingResponse:
                 "usage": trace.calls[-1].model_dump()
             }) + "\n"
 
+        path = trace.save()
         yield json.dumps({
             "type": "done",
             "totals": trace.totals(),
-            "run_id": trace.run_id
+            "run_id": trace.run_id,
+            "trace_file": path.name,
         }) + "\n"
 
     return StreamingResponse(events(), media_type="application/x-ndjson")

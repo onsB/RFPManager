@@ -36,6 +36,9 @@ def main() -> None:
             print(f"           quote: \"{req.quote}\"")
         print()
 
+    print(f"Totals: {trace.totals()}")
+    print(f"Trace saved to {trace.save()}")
+
 
 if __name__ == "__main__":
     main()
