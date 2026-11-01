@@ -38,6 +38,19 @@ client) and the extracted requirements as `id [category, mandatory] description`
 - **"Risks must come from the requirements"**, because otherwise the model writes generic
   project risks ("scope creep", "communication issues").
 
+## judge.md: faithfulness judge (eval only)
+
+Used by `judge_faithfulness()` in the eval harness, once per extracted requirement, with a
+strict JSON schema (`FaithfulnessVerdict`). The user message is the quote and the description.
+
+- **Catches what the quote check can't**: a verbatim quote with a description that changes
+  its meaning ("desirable but not essential" -> "Have ISO 27001 certification").
+- **Content only, not obligation strength.** Strength is scored against gold labels
+  (mandatory accuracy). The first two versions judged strength too, and the 8B judge flagged
+  every imperative description ("Deliver...") as "stronger": 3-4 false alarms per run.
+- **`reason` before `verdict`** in the schema, so the model names the difference before labelling it.
+- `temperature=0`: a judge should give the same verdict every time.
+
 ## baseline.md: single-call baseline
 
 Used by `summarize_rfp()`: the whole document (truncated to `max_document_chars`) in one

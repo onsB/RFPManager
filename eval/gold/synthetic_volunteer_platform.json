@@ -1,0 +1,37 @@
+{
+  "document": "eval/briefs/synthetic_volunteer_platform.md",
+  "notes": "Synthetic brief: every requirement is known by construction. `trap` names the failure mode an item tests.",
+  "requirements": [
+    {"id": "G01", "quote": "The supplier must deliver a web platform where charities can post volunteering opportunities and volunteers can sign up for shifts", "mandatory": true, "categories": ["functional"], "trap": null},
+    {"id": "G02", "quote": "The platform must meet WCAG 2.2 AA accessibility standards", "mandatory": true, "categories": ["non-functional", "compliance"], "trap": null},
+    {"id": "G03", "quote": "The platform should send reminder emails to volunteers 24 hours before each shift", "mandatory": false, "categories": ["functional"], "trap": "should_not_must"},
+    {"id": "G04", "quote": "Pages should load in under 2 seconds on a standard 4G connection", "mandatory": false, "categories": ["non-functional"], "trap": "should_not_must"},
+    {"id": "G05", "quote": "two online training sessions for charity staff", "mandatory": true, "categories": ["functional"], "trap": "list_split"},
+    {"id": "G06", "quote": "a written user guide for volunteers", "mandatory": true, "categories": ["functional"], "trap": "list_split"},
+    {"id": "G07", "quote": "three months of post-launch support", "mandatory": true, "categories": ["functional"], "trap": "list_split"},
+    {"id": "G08", "quote": "The supplier must comply with UK GDPR", "mandatory": true, "categories": ["compliance"], "trap": "two_in_one_paragraph"},
+    {"id": "G09", "quote": "A data processing agreement must be signed before any personal data is shared", "mandatory": true, "categories": ["compliance"], "trap": "two_in_one_paragraph"},
+    {"id": "G10", "quote": "All personal data must be stored in the UK", "mandatory": true, "categories": ["compliance"], "trap": null},
+    {"id": "G11", "quote": "The supplier must not use volunteers' personal data for marketing or to train AI models", "mandatory": true, "categories": ["compliance"], "trap": "prohibition"},
+    {"id": "G12", "quote": "The supplier must hold professional indemnity insurance of at least £1 million", "mandatory": true, "categories": ["compliance"], "trap": null},
+    {"id": "G13", "quote": "ISO 27001 certification is desirable but not essential", "mandatory": false, "categories": ["compliance"], "trap": "desirable_not_essential"},
+    {"id": "G14", "quote": "Bids must not exceed £60,000 excluding VAT, including all licences and support for the first year", "mandatory": true, "categories": ["commercial"], "trap": "budget_cap"},
+    {"id": "G15", "quote": "Platform live for five pilot charities | 31 March 2027", "mandatory": true, "categories": ["non-functional", "functional", "commercial"], "trap": "in_table"},
+    {"id": "G16", "quote": "Full launch to all member charities | 30 June 2027", "mandatory": true, "categories": ["non-functional", "functional", "commercial"], "trap": "in_table"},
+    {"id": "G17", "quote": "Proposals must be submitted through the Trust's procurement portal by 5pm on 15 January 2027", "mandatory": true, "categories": ["commercial"], "trap": null},
+    {"id": "G18", "quote": "Proposals should not exceed 10 pages", "mandatory": false, "categories": ["commercial"], "trap": "should_not_must"},
+    {"id": "G19", "quote": "a delivery plan with milestones", "mandatory": false, "categories": ["commercial"], "trap": "list_split"},
+    {"id": "G20", "quote": "a fixed price breakdown", "mandatory": false, "categories": ["commercial"], "trap": "list_split"},
+    {"id": "G21", "quote": "two references from similar projects", "mandatory": false, "categories": ["commercial"], "trap": "list_split"}
+  ],
+  "optional": [
+    {"id": "O01", "quote": "The supplier may also propose an SMS notification feature as a separately priced option", "trap": "permission_or_option", "note": "An invitation, not an obligation. Extracting it is neither rewarded nor penalised."}
+  ],
+  "forbidden": [
+    {"id": "N01", "quote": "We aim to double the number of active volunteers in the borough by 2030", "trap": "client_goal"},
+    {"id": "N02", "quote": "A native mobile app is not required", "trap": "relaxation"},
+    {"id": "N03", "quote": "Individual CVs are not required", "trap": "relaxation"},
+    {"id": "N04", "quote": "Applications from consortia are welcome", "trap": "permission_or_option"},
+    {"id": "N05", "quote": "We expect to announce the outcome in February 2027", "trap": "client_timeline"}
+  ]
+}

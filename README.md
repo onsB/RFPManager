@@ -61,9 +61,54 @@ uv run python -m app.main inputs/InvitationtoTender_CommunitiesofPracticeDevelop
 Without an argument it uses `RFP_PATH` and `SECTION_IDS` at the top of `app/main.py`,
 so it can also be started with VS Code's Run button.
 
+### 5. Evaluate
+
+```bash
+uv run python -m eval.harness            # with the LLM judge (~2 min)
+uv run python -m eval.harness --no-judge # extraction metrics only
+```
+
+Runs extraction on every brief with gold labels in `eval/gold/` and writes a report to
+`eval/results/<run_id>_<brief>.md` (and `.json`). See [Evaluation](#evaluation).
+
 ### Troubleshooting
 
 - **Connection error**: the LM Studio server is not running, or not on port 1234.
 - **Model not found**: `LLM_MODEL` in `.env` does not match the identifier in LM Studio.
   `.env` overrides the defaults in `app/config.py`.
 - **`No module named app`**: run `uv sync`, and in VS Code select the `.venv` interpreter.
+
+## Evaluation
+
+`eval/harness.py` scores the extraction step against hand-written gold labels.
+
+**Gold set.** `eval/briefs/synthetic_volunteer_platform.md` is a synthetic ITT where every
+requirement is known by construction (`eval/gold/synthetic_volunteer_platform.json`):
+21 requirements to extract, 1 optional item (neither rewarded nor penalised), and 5
+forbidden items that must not be extracted. Items are tagged with the trap they test:
+"should" vs "must", list items to split, a prohibition, "desirable but not essential",
+a budget cap, milestones in a table, relaxations ("CVs are not required"), permissions
+("consortia are welcome") and the client's own goals.
+
+**Matching.** An extracted requirement matches a gold item when at least 60% of the shorter
+quote's content words appear in the other, one-to-one, best overlap first. A second
+extraction of the same item counts as a duplicate (false positive).
+
+**Metrics.**
+
+| Metric | What it measures |
+|---|---|
+| Precision / recall / F1 | Right requirements found, nothing extra |
+| Mandatory accuracy | `mandatory` matches the gold label (on matched items) |
+| Category accuracy | Category is one of the gold's accepted categories |
+| Quotes found | Quote appears in the section text (grounding check) |
+| Faithful descriptions | LLM judge: description states the same content as its quote |
+| Trap scoreboard | Pass/fail per planted trap |
+
+Each result records the git commit, a hash of the extraction prompt, the model and the
+judge, so scores can be compared across prompt changes. Token usage, latency and
+estimated cost are reported per step (extraction, judge).
+
+**Latest result** (`qwen/qwen3-8b`, judge `qwen/qwen3-8b`): precision 88%, recall 100%,
+mandatory accuracy 71%, faithful descriptions 84%. Full report in `eval/results/`.
+
