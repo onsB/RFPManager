@@ -32,6 +32,13 @@
   .bad { color: var(--bad); border-color: var(--bad); }
   .quote { color: var(--muted); font-size: 13px; font-style: italic; }
   .error { color: var(--bad); }
+  #summary .section { border-color: var(--accent); }
+  #summary h3 { font-size: 14px; margin: 16px 0 4px; }
+  #summary ol, #summary ul { margin: 0; padding-left: 20px; }
+  #summary li { margin-bottom: 6px; }
+  .ids { color: var(--muted); font-size: 12px; }
+  .high { color: var(--bad); border-color: var(--bad); }
+  .medium { color: var(--must); border-color: var(--must); }
 </style>
 </head>
 <body>
@@ -45,6 +52,7 @@
   </form>
 
   <p id="status"></p>
+  <div id="summary"></div>
   <div id="results"></div>
 </main>
 
@@ -53,6 +61,7 @@ const form = document.getElementById("form");
 const runBtn = document.getElementById("run");
 const statusEl = document.getElementById("status");
 const results = document.getElementById("results");
+const summaryEl = document.getElementById("summary");
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -74,14 +83,51 @@ function renderSection(card, event) {
                    r.quote_found ? "quote found" : "quote NOT found"));
     if (r.mandatory) tags.append(el("span", "tag must", "mandatory"));
     tags.append(el("span", "tag", r.category));
-    req.append(tags, el("div", "", r.description), el("div", "quote", `“${r.quote}”`));
+    req.append(tags, el("div", "", `${r.id} · ${r.description}`), el("div", "quote", `“${r.quote}”`));
     card.append(req);
   }
+}
+
+function renderSummary(event) {
+  const card = el("div", "section");
+  summaryEl.append(card);
+  if (event.error) { card.append(el("p", "error", "Summary failed: " + event.error)); return; }
+
+  const s = event.summary;
+  card.append(el("h2", "", `${s.project_title} · ${s.client}`), el("p", "", s.overview));
+
+  card.append(el("h3", "", "Approach"));
+  const phases = el("ol");
+  for (const p of s.approach) {
+    const li = el("li");
+    li.append(el("strong", "", p.phase + ": "), p.description, " ",
+              el("span", "ids", p.requirement_ids.join(", ")));
+    phases.append(li);
+  }
+  card.append(phases);
+
+  card.append(el("h3", "", "Risks"));
+  const risks = el("ul");
+  for (const r of s.risks) {
+    const li = el("li");
+    li.append(el("span", "tag " + r.severity, r.severity), " ", r.description,
+              el("div", "quote", "Mitigation: " + r.mitigation),
+              el("span", "ids", r.requirement_ids.join(", ")));
+    risks.append(li);
+  }
+  card.append(risks);
+
+  card.append(el("h3", "", "Checks"));
+  card.append(el("p", s.unknown_ids.length ? "error" : "",
+    `Made-up requirement ids: ${s.unknown_ids.join(", ") || "none"}`));
+  card.append(el("p", s.uncovered_mandatory.length ? "error" : "",
+    `Mandatory requirements no phase covers: ${s.uncovered_mandatory.join(", ") || "none"}`));
 }
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   results.innerHTML = "";
+  summaryEl.innerHTML = "";
   runBtn.disabled = true;
   statusEl.textContent = "Reading document…";
 
@@ -116,15 +162,22 @@ form.addEventListener("submit", async (e) => {
             results.append(card);
             cards[s.id] = card;
           }
-        } else {
+        } else if (event.type === "section") {
           done++;
           reqCount += event.requirements.length;
           renderSection(cards[event.id], event);
+          statusEl.textContent = done < total
+            ? `${done}/${total} sections · ${reqCount} requirements`
+            : `${reqCount} requirements · writing summary…`;
+        } else if (event.type === "summary") {
+          renderSummary(event);
+        } else if (event.type === "done") {
+          const t = event.totals;
+          statusEl.textContent = `Done: ${done}/${total} sections · ${reqCount} requirements · ` +
+            `${t.prompt_tokens + t.completion_tokens} tokens · ${t.latency_s}s · ~$${t.cost_usd.toFixed(4)}`;
         }
-        statusEl.textContent = `${done}/${total} sections · ${reqCount} requirements`;
       }
     }
-    statusEl.textContent = `Done: ${done}/${total} sections · ${reqCount} requirements`;
   } catch (err) {
     statusEl.textContent = "Error: " + err.message;
   } finally {
