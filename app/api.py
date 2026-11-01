@@ -50,11 +50,15 @@ def extract(file: UploadFile) -> StreamingResponse:
 
         for section in sections:
             start = time.perf_counter()
+            calls_before = len(trace.calls)
             try:
                 requirements = [r.model_dump() for r in extract_requirements(section, trace)]
                 error = None
             except Exception as exc:  # one failing section should not stop the run
                 requirements, error = [], str(exc)
+
+            # Save before yielding: if the browser disconnects, the generator stops at the yield.
+            trace.save()
             yield json.dumps({
                 "type": "section",
                 "id": section.id,
@@ -62,7 +66,8 @@ def extract(file: UploadFile) -> StreamingResponse:
                 "seconds": round(time.perf_counter() - start, 1),
                 "requirements": requirements,
                 "error": error,
-                "usage": trace.calls[-1].model_dump()
+                # A failed call may not be recorded; don't report the previous section's usage.
+                "usage": trace.calls[-1].model_dump() if len(trace.calls) > calls_before else None,
             }) + "\n"
 
         path = trace.save()
