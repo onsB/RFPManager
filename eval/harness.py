@@ -28,7 +28,7 @@ from app.config import settings
 from app.documents import load_document
 from app.quality import quote_overlap
 from app.schemas import SectionRequirement
-from app.sections import split_sections
+from app.sections import is_boilerplate, split_sections
 from app.telemetry import RunTrace
 
 ROOT = Path(__file__).parent.parent
@@ -93,6 +93,8 @@ def evaluate(gold_path: Path, use_judge: bool) -> dict:
     predictions: list[SectionRequirement] = []
     errors = {}
     for section in sections:
+        if is_boilerplate(section):  # same as the live pipeline
+            continue
         try:
             predictions.extend(extract_requirements(section, trace))
         except Exception as exc:  # report it; one failing section shouldn't stop the eval
