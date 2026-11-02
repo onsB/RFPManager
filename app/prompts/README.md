@@ -51,6 +51,41 @@ client) and the extracted requirements as `id [category, mandatory] description`
 - **"Risks must come from the requirements"**, because otherwise the model writes generic
   project risks ("scope creep", "communication issues").
 
+### synthesize.md v2: written for the critic loop
+- **Risks must cite an id AND name a concrete fact** (amount, date, named system, permit,
+  regulation). v1 said "risks must come from the requirements" and the model still wrote
+  "tight deadlines" with an id attached.
+- **Approach by evaluation criteria** when the RFP has them, because bids are scored per criterion.
+- **Bidder's side only**: the issuer's rights and actions aren't the bidder's phases or risks.
+- **Revision mode**: with a previous draft and reviewer issues in the user message (same
+  prompt, same schema), it fixes each issue and keeps the rest.
+
+## critic.md: the reviewer agent (tools, thinking on)
+
+Used by `review_summary()` in `app/critic.py`, in a tool loop of at most `agent_max_steps`
+turns. The user message is the draft brief as Markdown, with the ids each item cites.
+
+- **A rubric of 5 checks, each tied to a tool:** specific risks (get_key_facts,
+  list_requirements), coverage (check_coverage), contradictions (get_key_facts, then
+  search_rfp to read both passages), right party, structure (search_rfp
+  "evaluation criteria"). A rubric gives the 8B model concrete things to check rather than
+  "review this".
+- **"Check each point with a tool before you raise it"**, and evidence must be ids it read in
+  a tool result. Code enforces this: evidence ids it was never shown are dropped and counted
+  (`unverified_evidence`).
+- **check_coverage and get_key_facts first**: they are deterministic and cheap, and they
+  answer two of the five checks. Search only to confirm.
+- **At most 5 tool calls, at most 6 issues**: the code cap is `agent_max_steps`; the prompt
+  cap keeps the model from spending all its steps on searches.
+- **JSON answer in the prompt, not a strict schema**: LM Studio can't combine `tools` with
+  a strict `response_format`. Code takes the first JSON object after stripping `<think>`,
+  validates it with pydantic, and sends one repair turn if that fails.
+- **`approved` is re-checked in code**: false while any blocking issue (generic_risk,
+  uncovered_mandatory, contradiction, wrong_party) remains, whatever the model said.
+- **Thinking on (`/think`), temperature 0.6, top_p 0.95**: Qwen's recommended settings for
+  thinking mode; low temperature with thinking causes repetition loops. Thinking is
+  stripped before the assistant turn goes back into the history.
+
 ## judge.md: faithfulness judge (eval only)
 
 Used by `judge_section()`, in the live pipeline (online evaluation) and the eval harness,
