@@ -107,6 +107,19 @@ Each entry: what I chose, what I considered instead, and why.
 - **Known limit:** verdict labels are sometimes wrong even when the flag is right
   (a dropped condition labelled "stronger" instead of "weaker").
 
+### Online evaluation on every run
+- **Chose:** the checks that need no gold labels (quote found, judge faithfulness,
+  duplicates, summary grounding) run inside the pipeline on every document, right after
+  each section is extracted. Flagged requirements are shown with the judge's reason; the
+  run's quality report is saved in its trace.
+- **Why:** gold labels only exist for the test brief. On real uploads, these checks are
+  the only signal, and they turn "review 60 requirements" into "review the 10 flagged ones".
+  Saving them in the trace makes quality comparable across runs (dashboard next).
+- **Trade-off:** the judge adds ~1.5 s per requirement with the 8B model (about +50% run
+  time). `LIVE_JUDGE=false` turns it off; the deterministic checks stay on.
+- **Shared code:** the harness and the pipeline use the same quote-overlap function
+  (`app/quality.py`) for gold matching and duplicate detection.
+
 ## Failure modes found
 
 ### Negation flip ("CVs are not required" → "Do not include individual CVs")
@@ -144,7 +157,10 @@ Each entry: what I chose, what I considered instead, and why.
 - **Quotes stitched to list lead-ins:** "The supplier will need to provide: two online
   training sessions..." is faithful but not verbatim, so 6 of 25 quotes are "not found".
   Either the check should accept lead-in + item, or the prompt should ask for the item only.
-- **Consistent across runs:** three runs (temperature 0.2) gave identical extraction metrics.
+- **Not fully consistent across runs:** three harness runs gave identical metrics, but a
+  pipeline run on the same brief extracted 6 requirements from S07 instead of 8 (it dropped
+  "CVs not required" and "consortia welcome"). Temperature 0.2 leaves some variation; a
+  consistency metric (N runs, agreement of the matched set) is the next eval addition.
 
 ## Time log
 
