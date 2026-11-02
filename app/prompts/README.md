@@ -73,9 +73,11 @@ turns. The user message is the draft brief as Markdown, with the ids each item c
 - **"Check each point with a tool before you raise it"**, and evidence must be ids it read in
   a tool result. Code enforces this: evidence ids it was never shown are dropped and counted
   (`unverified_evidence`).
-- **check_coverage and get_key_facts first**: they are deterministic and cheap, and they
-  answer two of the five checks. Search only to confirm.
-- **At most 5 tool calls, at most 6 issues**: the code cap is `agent_max_steps`; the prompt
+- **Coverage and key facts are given, not tools**: code runs them and puts the results in
+  the first message, because the 8B critic called one tool and stopped. Coverage goes to the
+  writer as one code issue, so the critic is told not to repeat it. The first turn uses
+  `tool_choice="required"`, so the critic always reads the RFP itself (see DECISIONS.md).
+- **At most 4 tool calls, at most 6 issues**: the code cap is `agent_max_steps`; the prompt
   cap keeps the model from spending all its steps on searches.
 - **JSON answer in the prompt, not a strict schema**: LM Studio can't combine `tools` with
   a strict `response_format`. Code takes the first JSON object after stripping `<think>`,
