@@ -1,5 +1,7 @@
 # RFP Manager
 
+**Author:** Ons Bouarada
+
 Agentic application that reads an RFP brief and produces a structured solution summary
 (requirements, approach, risks). It runs on a local open-source LLM, so no paid API key is needed.
 
