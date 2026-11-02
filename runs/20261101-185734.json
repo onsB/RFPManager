@@ -1,0 +1,249 @@
+{
+  "run_id": "20261101-185734",
+  "document": "ContractTender2027.pdf",
+  "model": "qwen/qwen3-8b",
+  "temperature": 0.2,
+  "max_document_chars": 40000,
+  "max_section_chars": 8000,
+  "quality": {},
+  "totals": {
+    "calls": 23,
+    "prompt_tokens": 8561,
+    "completion_tokens": 2410,
+    "latency_s": 168.4,
+    "tokens_per_s": 14.3,
+    "cost_usd": 0.003228
+  },
+  "calls": [
+    {
+      "step": "extract",
+      "section_id": "S01",
+      "section_title": "Tender information for Hertford Town Council Festive Lights",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 393,
+      "completion_tokens": 65,
+      "latency_s": 4.09,
+      "cost_usd": 0.00011624
+    },
+    {
+      "step": "judge",
+      "section_id": "S01",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 276,
+      "completion_tokens": 58,
+      "latency_s": 4.31,
+      "cost_usd": 9.028e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S02",
+      "section_title": "Service delivery",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 555,
+      "completion_tokens": 575,
+      "latency_s": 30.18,
+      "cost_usd": 0.0005024
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 269,
+      "completion_tokens": 20,
+      "latency_s": 2.53,
+      "cost_usd": 6.242e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 249,
+      "completion_tokens": 23,
+      "latency_s": 1.28,
+      "cost_usd": 6.092e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 249,
+      "completion_tokens": 15,
+      "latency_s": 0.91,
+      "cost_usd": 5.532e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 259,
+      "completion_tokens": 22,
+      "latency_s": 1.26,
+      "cost_usd": 6.201999999999999e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 269,
+      "completion_tokens": 15,
+      "latency_s": 1.09,
+      "cost_usd": 5.8920000000000005e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 276,
+      "completion_tokens": 41,
+      "latency_s": 2.35,
+      "cost_usd": 7.837999999999999e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 281,
+      "completion_tokens": 15,
+      "latency_s": 1.11,
+      "cost_usd": 6.108e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 257,
+      "completion_tokens": 22,
+      "latency_s": 1.25,
+      "cost_usd": 6.166e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 260,
+      "completion_tokens": 19,
+      "latency_s": 1.31,
+      "cost_usd": 6.01e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 263,
+      "completion_tokens": 15,
+      "latency_s": 1.1,
+      "cost_usd": 5.7839999999999995e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 327,
+      "completion_tokens": 20,
+      "latency_s": 1.64,
+      "cost_usd": 7.286e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S03",
+      "section_title": "Asset list and installation requirements",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 617,
+      "completion_tokens": 441,
+      "latency_s": 23.8,
+      "cost_usd": 0.00041976
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 305,
+      "completion_tokens": 42,
+      "latency_s": 3.74,
+      "cost_usd": 8.43e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 316,
+      "completion_tokens": 79,
+      "latency_s": 4.28,
+      "cost_usd": 0.00011217999999999999
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 322,
+      "completion_tokens": 42,
+      "latency_s": 2.63,
+      "cost_usd": 8.736e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 303,
+      "completion_tokens": 65,
+      "latency_s": 3.58,
+      "cost_usd": 0.00010004
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 279,
+      "completion_tokens": 37,
+      "latency_s": 2.1,
+      "cost_usd": 7.612000000000001e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S05",
+      "section_title": "Other Information",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 408,
+      "completion_tokens": 81,
+      "latency_s": 14.03,
+      "cost_usd": 0.00013014
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 293,
+      "completion_tokens": 56,
+      "latency_s": 5.98,
+      "cost_usd": 9.194e-05
+    },
+    {
+      "step": "synthesize",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 1535,
+      "completion_tokens": 642,
+      "latency_s": 53.9,
+      "cost_usd": 0.0007257
+    }
+  ]
+}

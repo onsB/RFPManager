@@ -6,5 +6,3 @@ data/
 notebooks/explore.ipynb
 .claude/settings.local.json
 
-# Run traces; keep sample runs with `git add -f runs/<file>.json`
-runs/

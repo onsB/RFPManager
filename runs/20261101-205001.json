@@ -1,0 +1,139 @@
+{
+  "run_id": "20261101-205001",
+  "document": "GATE_JBU_Beach+Clubs_RFP_final.pdf",
+  "model": "qwen/qwen3-8b",
+  "temperature": 0.2,
+  "max_document_chars": 40000,
+  "max_section_chars": 8000,
+  "quality": {},
+  "totals": {
+    "calls": 12,
+    "prompt_tokens": 6760,
+    "completion_tokens": 1287,
+    "latency_s": 270.0,
+    "tokens_per_s": 4.8,
+    "cost_usd": 0.002118
+  },
+  "calls": [
+    {
+      "step": "extract",
+      "section_id": "S01",
+      "section_title": "Preamble",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 332,
+      "completion_tokens": 6,
+      "latency_s": 3.42,
+      "cost_usd": 6.395999999999999e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S02",
+      "section_title": "Request for Proposals",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 418,
+      "completion_tokens": 6,
+      "latency_s": 2.69,
+      "cost_usd": 7.944e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S03",
+      "section_title": "Request for Proposals > Key Dates for this Request for Proposals",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 1478,
+      "completion_tokens": 215,
+      "latency_s": 54.65,
+      "cost_usd": 0.00041653999999999997
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 481,
+      "completion_tokens": 130,
+      "latency_s": 25.57,
+      "cost_usd": 0.00017758
+    },
+    {
+      "step": "extract",
+      "section_id": "S04",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 642,
+      "completion_tokens": 219,
+      "latency_s": 42.35,
+      "cost_usd": 0.00026886
+    },
+    {
+      "step": "judge",
+      "section_id": "S04",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 473,
+      "completion_tokens": 170,
+      "latency_s": 31.08,
+      "cost_usd": 0.00020413999999999998
+    },
+    {
+      "step": "extract",
+      "section_id": "S05",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Overview of Properties Offered for Lease",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 402,
+      "completion_tokens": 54,
+      "latency_s": 11.2,
+      "cost_usd": 0.00011016
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 336,
+      "completion_tokens": 83,
+      "latency_s": 14.25,
+      "cost_usd": 0.00011857999999999998
+    },
+    {
+      "step": "extract",
+      "section_id": "S06",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Overview of Properties Offered for Lease > 1 Beach 193rd Street, Queens, NY (a.k.a. \u201cSilver Gull Beach Club\u201d)",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 596,
+      "completion_tokens": 6,
+      "latency_s": 8.99,
+      "cost_usd": 0.00011148000000000001
+    },
+    {
+      "step": "extract",
+      "section_id": "S07",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Overview of Properties Offered for Lease > 1 Beach 227th Street, Queens, NY (a.k.a. \u201cBreezy Point Beach Club\u201d)",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 559,
+      "completion_tokens": 6,
+      "latency_s": 7.58,
+      "cost_usd": 0.00010481999999999999
+    },
+    {
+      "step": "extract",
+      "section_id": "S08",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Allowed Uses of the Lease Premises",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 577,
+      "completion_tokens": 213,
+      "latency_s": 38.59,
+      "cost_usd": 0.00025296
+    },
+    {
+      "step": "judge",
+      "section_id": "S08",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 466,
+      "completion_tokens": 179,
+      "latency_s": 29.65,
+      "cost_usd": 0.00020918
+    }
+  ]
+}
