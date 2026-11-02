@@ -39,7 +39,7 @@ structured output works; to try another one, change this value only.
 | `LLM_API_KEY` | `lm-studio` | Ignored by LM Studio, required by the SDK |
 | `LLM_MODEL` | `qwen/qwen3-8b` | Model identifier in LM Studio |
 | `JUDGE_MODEL` | *(empty)* | Model for the faithfulness judge; empty reuses `LLM_MODEL` |
-| `LIVE_JUDGE` | `true` | Judge every requirement during normal runs (adds ~1.5 s each) |
+| `LIVE_JUDGE` | `true` | Judge every requirement in normal runs, after the brief is shown (review flags fill in a few minutes later) |
 
 ### 4. Run
 

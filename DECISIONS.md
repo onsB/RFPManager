@@ -122,14 +122,23 @@ Each entry: what I chose, what I considered instead, and why.
 
 ### Online evaluation on every run
 - **Chose:** the checks that need no gold labels (quote found, judge faithfulness,
-  duplicates, summary grounding) run inside the pipeline on every document, right after
-  each section is extracted. Flagged requirements are shown with the judge's reason; the
-  run's quality report is saved in its trace.
+  duplicates, summary grounding) run inside the pipeline on every document. Flagged
+  requirements are shown with the judge's reason; the run's quality report is saved in its trace.
 - **Why:** gold labels only exist for the test brief. On real uploads, these checks are
   the only signal, and they turn "review 60 requirements" into "review the 10 flagged ones".
   Saving them in the trace makes quality comparable across runs (dashboard next).
-- **Trade-off:** the judge adds ~1.5 s per requirement with the 8B model (about +50% run
-  time). `LIVE_JUDGE=false` turns it off; the deterministic checks stay on.
+- **Trade-off:** the judge adds ~1 s per requirement with the 8B model (about +40% run time).
+- **Judge after the summary, not during extraction:** the judge first ran right after each
+  section, so the brief waited for every verdict. Nothing before the summary uses them (the
+  synthesis plans from all requirements, flagged or not), so the judge now runs after the
+  summary event: the brief appears as soon as it's written and the "flagged for review"
+  count fills in section by section. Same total time, but on the synthetic brief the
+  brief appeared at 55 s instead of ~78 s, and the review numbers ~23 s later.
+  A background job overnight was rejected: the flagged numbers are part of the demo.
+  `LIVE_JUDGE=false` turns the judge off; the deterministic checks stay on.
+- **If the critic loop is added:** it needs verdicts before the summary (to re-extract
+  flagged sections), so it would move the judge back before synthesis, for flagged
+  sections at least. That's the cost of a loop, and it should be measured.
 - **Shared code:** the harness and the pipeline use the same quote-overlap function
   (`app/quality.py`) for gold matching and duplicate detection.
 
