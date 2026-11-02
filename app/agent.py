@@ -121,6 +121,8 @@ def synthesize_summary(
         revision = (
             f"## Previous draft\n\n{json.dumps(draft, ensure_ascii=False)}\n\n"
             f"## Reviewer issues to fix\n\n{issue_lines}\n\n"
+            "Rewrite the previous draft so that every issue above is fixed. "
+            "Returning the previous draft unchanged is wrong.\n\n"
         )
 
     response = traced_completion(
