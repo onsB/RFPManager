@@ -65,6 +65,9 @@ Each entry: what I chose, what I considered instead, and why.
 - **Checked on all 6 sample documents:** right deadline in the 5 that have one (four
   formats: date lists, table cells, form fields, sentences); none for the EOI, which has none.
   It skips the decoys: the Beach Clubs question deadline and the Hertford delivery deadline.
+  Later checked on the 3 demo briefs (`inputs/demo/`), which added "12 noon on…" and a
+  weekday before the date ("3:00 PM PST on Friday, December 11, 2026"): 8/8 correct, with
+  question, site-visit, award and report dates as decoys.
 - **Limit:** English month names and numeric dates only; relative dates ("four weeks after
   publication") aren't found. When nothing is found, the page says so.
 
