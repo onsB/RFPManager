@@ -1,0 +1,312 @@
+{
+  "run_id": "20261102-165558",
+  "document": "harbourside_tenant_portal_itt.md",
+  "model": "qwen/qwen3-8b",
+  "temperature": 0.2,
+  "max_document_chars": 40000,
+  "max_section_chars": 8000,
+  "quality": {
+    "requirements": 24,
+    "quote_found_rate": 0.833,
+    "judged": 0,
+    "faithfulness_rate": null,
+    "verdicts": {},
+    "duplicates": 0,
+    "needs_review": [
+      "S03-R02",
+      "S03-R03",
+      "S03-R04",
+      "S03-R05"
+    ],
+    "failed_sections": 0,
+    "skipped_sections": 0,
+    "sections_sent": 7,
+    "truncated_calls": [],
+    "reasoning_tokens": 0,
+    "unknown_ids": 0,
+    "uncovered_mandatory": 0,
+    "review_rounds": 2,
+    "approved": false,
+    "review_history": [
+      {
+        "round": 1,
+        "approved": false,
+        "issues_by_kind": {
+          "contradiction": 1
+        },
+        "unverified_evidence": [],
+        "error": null,
+        "revision_changed": true
+      },
+      {
+        "round": 2,
+        "approved": false,
+        "issues_by_kind": {
+          "structure": 1
+        },
+        "unverified_evidence": [],
+        "error": null,
+        "revision_changed": true
+      }
+    ],
+    "agent_steps": 6,
+    "tool_calls": 2,
+    "tool_errors": 0,
+    "tools_used": {
+      "search_rfp": 2
+    }
+  },
+  "tool_calls": [
+    {
+      "agent": "code",
+      "name": "check_coverage",
+      "arguments": "{}",
+      "result_chars": 127,
+      "ms": 0.1,
+      "error": null
+    },
+    {
+      "agent": "code",
+      "name": "get_key_facts",
+      "arguments": "{}",
+      "result_chars": 859,
+      "ms": 3.0,
+      "error": null
+    },
+    {
+      "agent": "critic",
+      "name": "search_rfp",
+      "arguments": "{\"query\":\"contract start\",\"k\":3}",
+      "result_chars": 1154,
+      "ms": 0.8,
+      "error": null
+    },
+    {
+      "agent": "code",
+      "name": "check_coverage",
+      "arguments": "{}",
+      "result_chars": 127,
+      "ms": 0.0,
+      "error": null
+    },
+    {
+      "agent": "code",
+      "name": "get_key_facts",
+      "arguments": "{}",
+      "result_chars": 859,
+      "ms": 2.0,
+      "error": null
+    },
+    {
+      "agent": "critic",
+      "name": "search_rfp",
+      "arguments": "{\"query\":\"evaluation criteria\",\"k\":3}",
+      "result_chars": 388,
+      "ms": 0.6,
+      "error": null
+    }
+  ],
+  "totals": {
+    "calls": 16,
+    "tool_calls": 6,
+    "prompt_tokens": 26212,
+    "completion_tokens": 8924,
+    "latency_s": 265.6,
+    "tokens_per_s": 33.6,
+    "cost_usd": 0.010965
+  },
+  "calls": [
+    {
+      "step": "extract",
+      "section_id": "S01",
+      "section_title": "Invitation to Tender: Tenant Self-Service Portal > Key dates",
+      "model": "qwen3-8b",
+      "prompt_tokens": 630,
+      "completion_tokens": 117,
+      "latency_s": 5.65,
+      "cost_usd": 0.00019529999999999998,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S02",
+      "section_title": "Invitation to Tender: Tenant Self-Service Portal > Background",
+      "model": "qwen3-8b",
+      "prompt_tokens": 548,
+      "completion_tokens": 6,
+      "latency_s": 0.33,
+      "cost_usd": 0.00010284,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S03",
+      "section_title": "Invitation to Tender: Tenant Self-Service Portal > Scope of work",
+      "model": "qwen3-8b",
+      "prompt_tokens": 611,
+      "completion_tokens": 415,
+      "latency_s": 14.91,
+      "cost_usd": 0.00040048000000000004,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S04",
+      "section_title": "Invitation to Tender: Tenant Self-Service Portal > Accessibility, security and data",
+      "model": "qwen3-8b",
+      "prompt_tokens": 590,
+      "completion_tokens": 294,
+      "latency_s": 8.21,
+      "cost_usd": 0.000312,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S05",
+      "section_title": "Invitation to Tender: Tenant Self-Service Portal > Budget and contract",
+      "model": "qwen3-8b",
+      "prompt_tokens": 613,
+      "completion_tokens": 267,
+      "latency_s": 12.33,
+      "cost_usd": 0.00029723999999999994,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S06",
+      "section_title": "Invitation to Tender: Tenant Self-Service Portal > Evaluation criteria",
+      "model": "qwen3-8b",
+      "prompt_tokens": 557,
+      "completion_tokens": 6,
+      "latency_s": 0.35,
+      "cost_usd": 0.00010446,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S07",
+      "section_title": "Invitation to Tender: Tenant Self-Service Portal > How to submit",
+      "model": "qwen3-8b",
+      "prompt_tokens": 553,
+      "completion_tokens": 218,
+      "latency_s": 5.98,
+      "cost_usd": 0.00025214,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "synthesize",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 1756,
+      "completion_tokens": 991,
+      "latency_s": 28.96,
+      "cost_usd": 0.00100978,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2230,
+      "completion_tokens": 1722,
+      "latency_s": 54.2,
+      "cost_usd": 0.0016067999999999998,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2401,
+      "completion_tokens": 352,
+      "latency_s": 10.95,
+      "cost_usd": 0.0006785799999999999,
+      "reasoning_tokens": 0,
+      "finish_reason": "tool_calls"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2750,
+      "completion_tokens": 509,
+      "latency_s": 14.87,
+      "cost_usd": 0.0008512999999999999,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "revise",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2780,
+      "completion_tokens": 915,
+      "latency_s": 28.04,
+      "cost_usd": 0.0011409,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2239,
+      "completion_tokens": 1089,
+      "latency_s": 28.35,
+      "cost_usd": 0.0011653199999999999,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2478,
+      "completion_tokens": 520,
+      "latency_s": 11.91,
+      "cost_usd": 0.0008100399999999999,
+      "reasoning_tokens": 0,
+      "finish_reason": "tool_calls"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2628,
+      "completion_tokens": 590,
+      "latency_s": 13.67,
+      "cost_usd": 0.0008860399999999999,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "revise",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2848,
+      "completion_tokens": 913,
+      "latency_s": 26.9,
+      "cost_usd": 0.0011517399999999998,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    }
+  ]
+}
