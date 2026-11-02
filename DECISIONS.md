@@ -71,6 +71,53 @@ Each entry: what I chose, what I considered instead, and why.
 - **Limit:** English month names and numeric dates only; relative dates ("four weeks after
   publication") aren't found. When nothing is found, the page says so.
 
+## Agentic step: critic agent with tools
+
+### Agents only where judgement pays off
+- **Chose:** extraction stays a deterministic map step (one call per section). Agency is
+  added only to reviewing the brief: a critic agent (`app/critic.py`) calls tools
+  (`app/tools.py`: `search_rfp` BM25, `get_section`, `list_requirements`), returns issues,
+  and the writer revises (`synthesize_summary` with `issues`), up to `max_review_rounds` (2).
+- **Instead of:** a fully autonomous agent over the raw document: slower, harder to evaluate,
+  and extraction doesn't need decisions.
+- **Deterministic checks run by code, not chosen by the model:** `check_coverage` and
+  `get_key_facts` go into the critic's first message. First version left them as tools: on
+  the Beach Clubs RFP the critic called `check_coverage` once, spent all 6 issue slots
+  restating its list, and never read the RFP (0 searches, contradiction missed).
+- **`tool_choice="required"` on the first turn:** without it the critic answered from the
+  checks alone in every round (54 s wasted per round before a push-back turn). With it, the
+  first turn is ~3 s and calls 1-3 tools; the model still picks which tools and what to search.
+- **Coverage as one code issue**, with "leave out the issuer's actions": insisting on 100%
+  coverage made the writer plan NPS's own actions (extraction errors) and bolt on generic risks.
+- **Contradictions are risks, not blockers:** the writer can't fix the client's document. The
+  fix is a risk naming both values, mitigated by a clarification question.
+
+### Guards (failure modes)
+- Looping: `agent_max_steps` (6) per review, `max_review_rounds` (2), max_tokens per call.
+- Context overflow: tool results cut to `tool_result_chars` (4,000).
+- Malformed tool calls: the error goes back as the tool result; the model retries.
+- Hallucinated evidence: ids the critic was never shown are dropped and counted.
+- False approval: `approved` recomputed in code from blocking issue kinds.
+- Lazy revision: code logs `revision_changed` (one run returned the draft unchanged).
+- Any agent failure keeps the current brief (graceful degradation); `AGENT_REVIEW=false`
+  reproduces the fixed pipeline (checked: no review events, 0 agent calls).
+
+### Measured (demo briefs, qwen3-8b, judge off)
+| Brief | Agent time / tokens | Critic tools chosen | Found |
+|---|---|---|---|
+| Harbourside | 189 s / 27K | search_rfp ×2 | planted contract-start contradiction (11 vs 4 Jan 2027); criteria with weights |
+| Port Alder | 126 s / 20K | search_rfp, get_section, list_requirements (×2 rounds) | evaluation criteria, a wrong-party risk; revised risks name the uncosted roof/grease trap works, $2M insurance, permits |
+
+- **Not yet good enough:** neither brief was approved within 2 rounds. The writer rarely
+  restructures the approach by evaluation criteria. Port Alder's term contradiction (5 vs 3
+  years) was missed (no date, so not in the key facts). In round 2 the critic asked for cost
+  estimates the RFP doesn't give (over-strict generic_risk). On Harbourside the writer
+  silently picked one of the two contract dates.
+- **Not rerun after the fixes:** the Beach Clubs acceptance test (first version: 332 s of
+  agent time, failed as described above).
+- **Next steps (not built):** parallel extraction (LM Studio slots), embedding search and
+  dedupe, judge calibration against hand labels, A/B with N runs per brief.
+
 ## Observability
 
 ### Own telemetry wrapper instead of Phoenix / Langfuse
