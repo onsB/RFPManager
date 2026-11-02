@@ -10,6 +10,7 @@ from app.schemas import (
     RFPSummary,
     SectionExtraction,
     SectionRequirement,
+    SectionVerdicts,
     SolutionSummary,
     Synthesis,
 )
@@ -152,30 +153,42 @@ def summarize_rfp(document_text: str, trace: RunTrace | None) -> SolutionSummary
     return SolutionSummary.model_validate_json(response.choices[0].message.content)
 
 
-def judge_faithfulness(requirement: SectionRequirement, trace: RunTrace | None) -> FaithfulnessVerdict:
-    """Asks the judge model whether a requirement's description means the same as its quote.
+def judge_section(requirements: list[SectionRequirement], trace: RunTrace | None) -> dict[str, FaithfulnessVerdict]:
+    """Asks the judge model, in one call, whether each requirement's description means the same as its quote.
 
     Catches what the quote check can't: a verbatim quote with a description that
     changes its meaning (e.g. "CVs are not required" -> "Do not include CVs").
+    One call per section instead of per requirement: the instructions are sent once, so
+    ~75% fewer prompt tokens (not faster locally, where time follows output tokens; see
+    prompts/README.md). Returns {requirement id: verdict}; a requirement the
+    model skipped is missing from the result, and ids it made up are dropped.
     """
+    if not requirements:
+        return {}
+    items = "\n\n".join(
+        f"[{r.id}]\nQuote: {r.quote}\nDescription: {r.description}" for r in requirements
+    )
     response = traced_completion(
-        client, trace, step="judge", section_id=requirement.section_id,
+        client, trace, step="judge", section_id=requirements[0].section_id,
         model=settings.judge_model or settings.llm_model,
         temperature=0,  # a judge should give the same verdict every time
         messages=[
             {"role": "system", "content": JUDGE_PROMPT},
-            {"role": "user", "content": (
-                f"Quote: {requirement.quote}\n"
-                f"Description: {requirement.description}\n\n/no_think"
-            )},
+            {"role": "user", "content": f"{items}\n\n/no_think"},
         ],
         response_format={
             "type": "json_schema",
             "json_schema": {
-                "name": "faithfulness_verdict",
-                "schema": FaithfulnessVerdict.model_json_schema(),
+                "name": "section_verdicts",
+                "schema": SectionVerdicts.model_json_schema(),
                 "strict": True,
             },
         },
     )
-    return FaithfulnessVerdict.model_validate_json(response.choices[0].message.content)
+    result = SectionVerdicts.model_validate_json(response.choices[0].message.content)
+    known = {r.id for r in requirements}
+    verdicts: dict[str, FaithfulnessVerdict] = {}
+    for v in result.verdicts:
+        if v.requirement_id in known and v.requirement_id not in verdicts:
+            verdicts[v.requirement_id] = v
+    return verdicts

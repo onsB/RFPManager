@@ -28,6 +28,7 @@ class RunTrace(BaseModel):
     temperature: float = settings.llm_temperature
     max_document_chars: int = settings.max_document_chars
     max_section_chars: int = settings.max_section_chars  # changes how sections are split, so what S12 means
+    quality: dict = {}  # online evaluation results (app/quality.py), filled at the end of a run
     calls: list[CallRecord] = []
 
 

@@ -29,13 +29,24 @@ class SectionRequirement(ExtractedRequirement):
     id: str  # "<section id>-R<n>", e.g. "S12-R03": unique in the document, traceable to its section
     section_id: str
     quote_found: bool = Field(description="True if the quote was found in the section text")
+    # Online evaluation (app/quality.py), filled in after extraction:
+    verdict: str | None = Field(default=None, description="LLM judge: same / weaker / stronger / contradicts / unsupported")
+    verdict_reason: str | None = None
+    duplicate_of: str | None = Field(default=None, description="Id of an earlier requirement with the same quote")
 
 
 class FaithfulnessVerdict(BaseModel):
-    """What the LLM judge returns for one requirement: does the description match its quote?"""
+    """The LLM judge's verdict on one requirement: does the description match its quote?"""
 
+    requirement_id: str = Field(description="Id of the requirement being judged, copied from the input")
     reason: str = Field(description="One sentence naming the difference, written before the verdict")
     verdict: Literal["same", "weaker", "stronger", "contradicts", "unsupported"]
+
+
+class SectionVerdicts(BaseModel):
+    """What the LLM judge returns for one section: a verdict per requirement."""
+
+    verdicts: list[FaithfulnessVerdict]
 
 
 class PlannedPhase(BaseModel):
