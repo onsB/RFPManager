@@ -271,7 +271,7 @@ Each entry: what I chose, what I considered instead, and why.
 
 ## Time log
 
-Approximate, from commit timestamps; to be corrected.
+Approximate, from commit timestamps and my own estimates.
 
 | Part | Time |
 |---|---|
@@ -280,7 +280,8 @@ Approximate, from commit timestamps; to be corrected.
 | Document loading and section splitting | ~2 h |
 | Requirement extraction with quote check | ~1 h |
 | FastAPI demo page | ~0.5 h |
-| Observability (telemetry, run traces) | ~2 h |
+| Observability (telemetry, run traces) | ~3 h |
 | Eval harness (synthetic gold set, matcher, judge) | ~3 h |
-| Agentic pipeline (planner, risks, critic) | — |
-| Docs and demo | — |
+| Agentic pipeline (planner, risks, critic) | ~4 h |
+| Docs and demo | ~1 h |
+| **Total** | **~17.5 h** (of the 36 h budget) |
