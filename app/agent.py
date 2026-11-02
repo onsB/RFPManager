@@ -33,9 +33,26 @@ OPENING_CHARS = 3_000  # how much of the document the synthesis sees, for title 
 client = OpenAI(base_url=settings.llm_base_url, api_key=settings.llm_api_key)
 
 
+# Typographic characters PDFs use and models rarely copy: curly quotes, dashes, ligatures.
+_TYPOGRAPHY = str.maketrans({
+    "\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'", "\u2032": "'",
+    "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u201f": '"', "\u2033": '"',
+    "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-", "\u2212": "-",
+    "\u00a0": " ", "\u2009": " ", "\u202f": " ", "\u00ad": None,  # nbsp, thin spaces; soft hyphen dropped
+    "\ufb01": "fi", "\ufb02": "fl", "\u2026": "...",
+})
+
+
 def normalize_text(text: str) -> str:
-    """Lowercases and strips Markdown and whitespace so quotes can be matched to the source."""
-    text = re.sub(r"<[^>]+>|[*_|`#]", " ", text.lower())
+    """Normalizes text so a quote can be matched to its source despite formatting.
+
+    Lowercases; maps curly quotes, dashes, ligatures and special spaces to plain ASCII;
+    strips Markdown and HTML tags; rejoins words hyphenated across a line break
+    ("environ-\nmental"); collapses whitespace.
+    """
+    text = text.lower().translate(_TYPOGRAPHY)
+    text = re.sub(r"<[^>]+>|[*_|`#]", " ", text)
+    text = re.sub(r"(\w)-\s*\n\s*(\w)", r"\1\2", text)  # line-break hyphenation, before newlines collapse
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -45,6 +62,7 @@ def extract_requirements(section: DocumentSection, trace: RunTrace | None) -> li
         client, trace, step="extract", section_id=section.id, section_title=section.breadcrumb,
         model=settings.llm_model,
         temperature=settings.llm_temperature,
+        max_tokens=settings.max_output_tokens,
         messages=[
             {"role": "system", "content": EXTRACT_PROMPT},
             # /no_think turns off Qwen3's reasoning: slower and not needed for extraction.
@@ -93,6 +111,7 @@ def synthesize_summary(
         client, trace, step="synthesize",
         model=settings.llm_model,
         temperature=settings.llm_temperature,
+        max_tokens=settings.max_summary_tokens,
         messages=[
             {"role": "system", "content": SYNTHESIZE_PROMPT},
             {"role": "user", "content": (
@@ -172,6 +191,7 @@ def judge_section(requirements: list[SectionRequirement], trace: RunTrace | None
         client, trace, step="judge", section_id=requirements[0].section_id,
         model=settings.judge_model or settings.llm_model,
         temperature=0,  # a judge should give the same verdict every time
+        max_tokens=settings.max_output_tokens,
         messages=[
             {"role": "system", "content": JUDGE_PROMPT},
             {"role": "user", "content": f"{items}\n\n/no_think"},
