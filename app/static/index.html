@@ -55,6 +55,11 @@
   .metric { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
   .metric b { display: block; font-size: 20px; }
   .metric span { color: var(--muted); font-size: 12px; }
+  #reviewer .section { border-style: dashed; }
+  #reviewer h2 { margin-bottom: 4px; }
+  .round { border-top: 1px solid var(--line); padding: 8px 0; }
+  .issue { margin: 6px 0 0 12px; font-size: 14px; }
+  .revised { color: var(--accent); border-color: var(--accent); }
 </style>
 </head>
 <body>
@@ -73,6 +78,7 @@
   </div>
   <div id="quality" class="details-only"></div>
   <div id="summary"></div>
+  <div id="reviewer"></div>
   <div id="results" class="details-only"></div>
 </main>
 
@@ -85,6 +91,7 @@ const toggleBtn = document.getElementById("toggle");
 const results = document.getElementById("results");
 const summaryEl = document.getElementById("summary");
 const qualityEl = document.getElementById("quality");
+const reviewerEl = document.getElementById("reviewer");
 
 // The judge runs after the summary, so verdicts arrive later and update what is on screen.
 let sectionEvents = {};  // section id -> its "section" event (requirements are updated in place)
@@ -163,6 +170,9 @@ function renderQuality(q) {
     [q.needs_review.length, "need review"],
     [q.unknown_ids ?? "n/a", "made-up ids in summary"],
     [q.uncovered_mandatory ?? "n/a", "mandatory not planned"],
+    [q.review_rounds ? `${q.review_rounds} · ${q.approved ? "approved" : q.approved === false ? "not approved" : "failed"}` : "off",
+     "review rounds"],
+    [`${q.tool_calls ?? 0} / ${q.agent_steps ?? 0}`, "tool calls / agent steps"],
   ];
   for (const [value, label] of metrics) {
     const m = el("div", "metric");
@@ -171,7 +181,55 @@ function renderQuality(q) {
   }
 }
 
+// The critic agent's rounds: one block per round, under the brief.
+function reviewerCard() {
+  let card = reviewerEl.querySelector(".section");
+  if (!card) {
+    card = el("div", "section");
+    card.append(el("h2", "", "Reviewer"),
+                el("p", "ids", "A critic agent checks the brief with tools (coverage, key facts, RFP search) " +
+                               "and sends it back to the writer until it approves."));
+    reviewerEl.append(card);
+  }
+  return card;
+}
+
+function renderReviewing(event) {
+  const block = el("div", "round pending", `Round ${event.round}: checking the brief…`);
+  block.id = `round-${event.round}`;
+  reviewerCard().append(block);
+}
+
+function renderReview(event) {
+  const block = document.getElementById(`round-${event.round}`) || reviewerCard().appendChild(el("div"));
+  block.className = "round";
+  block.textContent = "";
+  const head = el("strong", "", `Round ${event.round}: `);
+  if (event.error) {
+    block.append(head, el("span", "error", `reviewer failed, brief kept as it was (${event.error})`));
+    return;
+  }
+  block.append(head, event.approved
+    ? el("span", "tag ok", "approved")
+    : el("span", "tag bad", `${event.issues.length} issue${event.issues.length === 1 ? "" : "s"} · sent back for revision`));
+  for (const i of event.issues) {
+    const issue = el("div", "issue");
+    issue.append(el("span", "tag", i.kind.replace("_", " ")), " ", i.detail,
+                 el("div", "quote", "Fix: " + i.fix),
+                 el("span", "ids", i.evidence.length ? "checked " + i.evidence.join(", ") : "no evidence cited"));
+    block.append(issue);
+  }
+  if (event.unverified_evidence?.length) {
+    block.append(el("div", "ids details-only", `Dropped evidence the reviewer never saw: ${event.unverified_evidence.join(", ")}`));
+  }
+}
+
 function renderSummary(event) {
+  if (event.revision && event.error) {  // revising failed: keep the brief on screen
+    reviewerCard().append(el("p", "error", `Revision ${event.revision} failed, previous brief kept: ${event.error}`));
+    return;
+  }
+  summaryEl.innerHTML = "";  // a revision replaces the previous brief
   const card = el("div", "section");
   summaryEl.append(card);
   if (event.error) { card.append(el("p", "error", "Summary failed: " + event.error)); return; }
@@ -192,8 +250,10 @@ function renderSummary(event) {
   } else {
     due.append(el("span", "ids", "No submission deadline found in the document: check it manually."));
   }
+  const title = el("h2", "", `${s.project_title} · ${s.client}`);
+  if (event.revision) title.append(el("span", "tag revised", `revised after review round ${event.revision}`));
   header.append(
-    el("h2", "", `${s.project_title} · ${s.client}`),
+    title,
     due,
     countsEl,
   );
@@ -265,6 +325,7 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   results.innerHTML = "";
   summaryEl.innerHTML = "";
+  reviewerEl.innerHTML = "";
   qualityEl.innerHTML = "";
   statsEl.textContent = "";
   sectionEvents = {};
@@ -318,7 +379,14 @@ form.addEventListener("submit", async (e) => {
           statsEl.textContent = ` · ${reqCount} requirements so far`;
         } else if (event.type === "summary") {
           renderSummary(event);
-          progressEl.textContent = "Brief ready";
+          progressEl.textContent = event.revision ? `Brief revised (round ${event.revision})` : "Draft brief ready";
+        } else if (event.type === "reviewing") {
+          renderReviewing(event);
+          progressEl.textContent = `Reviewer checking the brief (round ${event.round})…`;
+        } else if (event.type === "review") {
+          renderReview(event);
+          progressEl.textContent = event.approved ? "Brief approved by the reviewer"
+            : event.error ? "Reviewer failed, brief kept" : `Revising the brief (round ${event.round})…`;
         } else if (event.type === "judging") {
           judging = true;
           updateCounts();
