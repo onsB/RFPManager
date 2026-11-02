@@ -162,6 +162,41 @@ Each entry: what I chose, what I considered instead, and why.
   "CVs not required" and "consortia welcome"). Temperature 0.2 leaves some variation; a
   consistency metric (N runs, agreement of the matched set) is the next eval addition.
 
+### Buyer rights as requirements, and the deadline regression the fix caused
+- **Seen (v1):** on the Beach Clubs RFP, the buyer's rights were extracted as offeror
+  obligations ("NPS reserves the right to negotiate with the next highest ranked Offeror",
+  "reject one or all proposals", "incorporated at Lessor's discretion").
+- **Fix attempt (v2):** extract only obligations on the supplier; list the buyer's rights,
+  "process and timeline" and position as not requirements, with a subject test.
+- **Regression:** in two full runs, S02 "Key Dates" returned no requirements and dropped
+  the proposal deadline (Sept 18), the most important requirement in the document.
+  The TOC filter was suspected but ruled out: the trace shows S02 was sent to the LLM
+  (694 prompt tokens) with the deadline in its text, and the model answered `[]`.
+- **Cause:** v2 contradicted itself. "Deadlines are requirements" and "the buyer's
+  timeline is not" both apply to a list of key dates, so the section became borderline.
+  It returned `[]` in 2/2 full runs, but found the deadline in 8/8 isolated reruns:
+  near a decision boundary, small differences between runs tip the outcome.
+- **Fix (v3):** the buyer's own dates (release, selection) are "milestones", not
+  requirements; a deadline the supplier must meet is a requirement even in a list of dates.
+- **Measured (2026-11-02, Beach Clubs, temperature 0.2):**
+
+  | | v2 | v3 |
+  |---|---|---|
+  | S02: both deadlines found | 0/2 full runs | 5/5 |
+  | S03: buyer rights extracted | 4/4 runs | 1/6 runs |
+  | S03: due diligence, NPS approval of alterations found | yes | no |
+
+- **Trade-off:** v3 is more precise on S03 but misses two real offeror obligations there
+  ("It is incumbent upon the Offeror to conduct all due diligence", alterations "must be
+  approved in advance by NPS"): obligations whose sentence subject is not the offeror.
+- **Lesson:** v2 was judged on one run, and so was the regression. With this much run-to-run
+  variation, a prompt change only counts if it holds over several runs. These three cases
+  (deadline must be found, buyer rights must not, the two S03 obligations must) go into the
+  harness as gold items on a real document, run N times.
+- **Open question:** one failing run was served as `qwen3-8b` and the other as
+  `qwen/qwen3-8b`. If LM Studio has two different downloads under these names, runs aren't
+  comparable; the trace records the served model so this can be checked.
+
 ## Time log
 
 Approximate, from commit timestamps; to be corrected.
