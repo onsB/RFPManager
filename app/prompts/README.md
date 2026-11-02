@@ -10,6 +10,11 @@ Used by `extract_requirements()`, once per document section, with a strict JSON 
 
 - **Defines a requirement** (supplier obligation or bid constraint) and what is not one
   (background, the client's own goals), because the model otherwise extracts everything.
+- **Offeror-only (v2).** On the Beach Clubs RFP, v1 extracted the buyer's rights as
+  offeror obligations ("NPS reserves the right to negotiate with the next Offeror",
+  "elements may be incorporated at Lessor's discretion"). The prompt now lists the
+  supplier's other names (offeror, lessee...) and the buyer-side patterns to skip, with
+  a subject test: if the subject is the buyer, it's almost never a requirement.
 - **One obligation per item**, so lists in RFPs become countable requirements.
 - **Verbatim quote (max 30 words)** so code can check each requirement against the source
   (`quote_found`). This is the main hallucination guard.
