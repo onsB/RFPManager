@@ -33,7 +33,10 @@ def print_summary(event: dict) -> None:
         print(f"Summary failed: {event['error']}\n")
         return
     s = event["summary"]
-    print(f"# {s['project_title']} ({s['client']})\n\n{s['overview']}\n")
+    print(f"# {s['project_title']} ({s['client']})")
+    d = s["deadline"]
+    print(f"Due: {d['date']}  ({d['label']}, {d['section_id']})" if d else "Due: no submission deadline found")
+    print(f"\n{s['overview']}\n")
     print("Approach:")
     for phase in s["approach"]:
         print(f"  - {phase['phase']}: {phase['description']}  {phase['requirement_ids']}")

@@ -49,6 +49,14 @@ class SectionVerdicts(BaseModel):
     verdicts: list[FaithfulnessVerdict]
 
 
+class Deadline(BaseModel):
+    """The proposal submission deadline, found by code in the document text (app/facts.py)."""
+
+    date: str = Field(description="As written in the document, e.g. 'September 18, 2026 at 5:00 PM EDT'")
+    label: str = Field(description="The words before the date, e.g. 'Initial Proposal Submittal Deadline'")
+    section_id: str
+
+
 class PlannedPhase(BaseModel):
     # Ids first: the model picks the requirements before writing about them.
     requirement_ids: list[str] = Field(description="Ids of the requirements this phase delivers")
@@ -84,6 +92,7 @@ class RFPSummary(BaseModel):
     risks: list[GroundedRisk]
     unknown_ids: list[str] = Field(description="Ids cited by the synthesis that don't exist (dropped)")
     uncovered_mandatory: list[str] = Field(description="Mandatory requirement ids no approach phase covers")
+    deadline: Deadline | None = None  # set by app/facts.py from the document text, not by the LLM
 
 
 class ApproachStep(BaseModel):

@@ -55,6 +55,19 @@ Each entry: what I chose, what I considered instead, and why.
   gives an eval metric (share of quotes found).
 - **Limit:** it checks the wording, not the meaning. See the failure mode below.
 
+### Submission deadline found by code, not by the LLM
+- **Chose:** `find_deadline()` in `app/facts.py` scans the document text for dates and
+  classifies each by the words just before it: it must name a submission and a deadline,
+  and not be about questions, site visits, award or delivery. Shown under the summary title.
+- **Instead of:** taking the deadline from the extracted requirements.
+- **Why:** it is the most important fact in an RFP, and the LLM dropped it (the Key Dates
+  regression). A regex can't drop it on a bad run, and it cites the section it came from.
+- **Checked on all 6 sample documents:** right deadline in the 5 that have one (four
+  formats: date lists, table cells, form fields, sentences); none for the EOI, which has none.
+  It skips the decoys: the Beach Clubs question deadline and the Hertford delivery deadline.
+- **Limit:** English month names and numeric dates only; relative dates ("four weeks after
+  publication") aren't found. When nothing is found, the page says so.
+
 ## Observability
 
 ### Own telemetry wrapper instead of Phoenix / Langfuse

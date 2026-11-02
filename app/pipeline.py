@@ -3,6 +3,7 @@ from collections.abc import Iterator
 
 from app.agent import extract_requirements, judge_section, synthesize_summary
 from app.config import settings
+from app.facts import find_deadline
 from app.quality import mark_duplicates, quality_report
 from app.schemas import SectionRequirement
 from app.sections import is_boilerplate, split_sections
@@ -74,6 +75,8 @@ def run_pipeline(text: str, document: str, section_ids: list[str] | None = None)
 
     try:
         summary = synthesize_summary(sections, all_requirements, trace)
+        # Found by code in the full text, so the LLM can't drop it (see DECISIONS.md, Key Dates).
+        summary.deadline = find_deadline(sections)
         error = None
     except Exception as exc:
         summary, error = None, str(exc)
