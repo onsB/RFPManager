@@ -39,6 +39,12 @@
   .ids { color: var(--muted); font-size: 12px; }
   .high { color: var(--bad); border-color: var(--bad); }
   .medium { color: var(--must); border-color: var(--must); }
+  .review { border-left: 3px solid var(--bad); padding-left: 8px; }
+  .judge { color: var(--bad); font-size: 13px; }
+  #quality { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; margin: 0 0 16px; }
+  .metric { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; }
+  .metric b { display: block; font-size: 20px; }
+  .metric span { color: var(--muted); font-size: 12px; }
 </style>
 </head>
 <body>
@@ -52,6 +58,7 @@
   </form>
 
   <p id="status"></p>
+  <div id="quality"></div>
   <div id="summary"></div>
   <div id="results"></div>
 </main>
@@ -62,6 +69,7 @@ const runBtn = document.getElementById("run");
 const statusEl = document.getElementById("status");
 const results = document.getElementById("results");
 const summaryEl = document.getElementById("summary");
+const qualityEl = document.getElementById("quality");
 
 function el(tag, cls, text) {
   const e = document.createElement(tag);
@@ -77,14 +85,38 @@ function renderSection(card, event) {
   if (event.error) card.append(el("p", "error", event.error));
 
   for (const r of event.requirements) {
-    const req = el("div", "req");
+    const flagged = !r.quote_found || r.duplicate_of || (r.verdict && r.verdict !== "same");
+    const req = el("div", "req" + (flagged ? " review" : ""));
     const tags = el("div", "tags");
     tags.append(el("span", "tag " + (r.quote_found ? "ok" : "bad"),
                    r.quote_found ? "quote found" : "quote NOT found"));
+    if (r.verdict) tags.append(el("span", "tag " + (r.verdict === "same" ? "ok" : "bad"),
+                                  r.verdict === "same" ? "faithful" : r.verdict));
+    if (r.duplicate_of) tags.append(el("span", "tag bad", "duplicate of " + r.duplicate_of));
     if (r.mandatory) tags.append(el("span", "tag must", "mandatory"));
     tags.append(el("span", "tag", r.category));
     req.append(tags, el("div", "", `${r.id} · ${r.description}`), el("div", "quote", `“${r.quote}”`));
+    if (r.verdict && r.verdict !== "same") req.append(el("div", "judge", "Judge: " + r.verdict_reason));
     card.append(req);
+  }
+}
+
+function pct(v) { return v === null || v === undefined ? "n/a" : Math.round(v * 100) + "%"; }
+
+function renderQuality(q) {
+  qualityEl.innerHTML = "";
+  const metrics = [
+    [pct(q.quote_found_rate), "quotes found in source"],
+    [pct(q.faithfulness_rate), `faithful (judge, ${q.judged} judged)`],
+    [q.duplicates, "duplicates"],
+    [q.needs_review.length, "need review"],
+    [q.unknown_ids ?? "n/a", "made-up ids in summary"],
+    [q.uncovered_mandatory ?? "n/a", "mandatory not planned"],
+  ];
+  for (const [value, label] of metrics) {
+    const m = el("div", "metric");
+    m.append(el("b", "", String(value)), el("span", "", label));
+    qualityEl.append(m);
   }
 }
 
@@ -128,6 +160,7 @@ form.addEventListener("submit", async (e) => {
   e.preventDefault();
   results.innerHTML = "";
   summaryEl.innerHTML = "";
+  qualityEl.innerHTML = "";
   runBtn.disabled = true;
   statusEl.textContent = "Reading document…";
 
@@ -172,6 +205,7 @@ form.addEventListener("submit", async (e) => {
         } else if (event.type === "summary") {
           renderSummary(event);
         } else if (event.type === "done") {
+          renderQuality(event.quality);
           const t = event.totals;
           statusEl.textContent = `Done: ${done}/${total} sections · ${reqCount} requirements · ` +
             `${t.prompt_tokens + t.completion_tokens} tokens · ${t.latency_s}s · ~$${t.cost_usd.toFixed(4)}`;
