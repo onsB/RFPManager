@@ -5,6 +5,9 @@
 
 Reads runs/<run_id>.json (written by every pipeline run) and prints a Markdown table,
 ready to paste into DECISIONS.md. Older traces lack some fields; those show "n/a".
+
+Critic A/B: compare a run with AGENT_REVIEW=false against one with it on. The "on" run
+also holds its own before/after: round 1 reviews the draft, the last round the final brief.
 """
 
 import argparse
@@ -27,6 +30,17 @@ def _row(trace: dict) -> dict[str, str]:
         return "n/a" if v is None else f"{v:.0%}"
 
     review = q.get("needs_review")
+    history = [r for r in q.get("review_history", []) if not r.get("error")]
+
+    def issues(rnd: dict | None) -> str:
+        if rnd is None:
+            return "n/a"
+        kinds = rnd["issues_by_kind"]
+        return f"{sum(kinds.values())} " + (str(kinds) if kinds else "")
+
+    agent_calls = [c for c in calls if c["step"] in ("critic", "revise")]
+    agent_s = sum(c["latency_s"] for c in agent_calls)
+    agent_on = "review_rounds" in q and q["review_rounds"] > 0
     return {
         "Document": trace["document"],
         "Sections sent to LLM": str(sum(c["step"] == "extract" for c in calls)),
@@ -45,6 +59,18 @@ def _row(trace: dict) -> dict[str, str]:
         "Failed sections": str(q.get("failed_sections", "n/a")),
         "Made-up ids in summary": str(q.get("unknown_ids", "n/a")),
         "Mandatory reqs not planned": str(q.get("uncovered_mandatory", "n/a")),
+        # Critic loop. Round 1 reviews the draft (= what AGENT_REVIEW=false outputs), the last
+        # round the final brief, so one trace holds its own before/after on the same extraction.
+        "Review rounds": str(q["review_rounds"]) if "review_rounds" in q else "n/a",
+        "Final brief approved": str(q.get("approved")) if agent_on else "n/a",
+        "Critic issues on the draft (round 1)": issues(history[0] if history else None),
+        "Critic issues, last round": issues(history[-1] if len(history) > 1 else None),
+        "Agent steps / tool calls": f"{q['agent_steps']} / {q['tool_calls']}" if agent_on else "n/a",
+        "Agent time (s) / tokens": (
+            f"{agent_s:,.1f} / {sum(c['prompt_tokens'] + c['completion_tokens'] for c in agent_calls):,}"
+            if agent_on else "n/a"
+        ),
+        "LLM time without agent (s)": f"{t['latency_s'] - agent_s:,.1f}",
     }
 
 
