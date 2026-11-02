@@ -5,7 +5,7 @@ from app.agent import extract_requirements, judge_section, synthesize_summary
 from app.config import settings
 from app.quality import mark_duplicates, quality_report
 from app.schemas import SectionRequirement
-from app.sections import split_sections
+from app.sections import is_boilerplate, split_sections
 from app.telemetry import RunTrace
 
 
@@ -17,6 +17,7 @@ def run_pipeline(text: str, document: str, section_ids: list[str] | None = None)
     requirements. Events (plain dicts, JSON-ready):
       {"type": "sections"}  the sections found
       {"type": "section"}   one per section, with its requirements and LLM usage
+                            ("skipped": true for boilerplate sections, not sent to the LLM)
       {"type": "summary"}   overview, approach, risks and the checks
       {"type": "done"}      run totals, quality report and the trace file name
     The CLI prints these events and the API streams them to the browser.
@@ -25,13 +26,23 @@ def run_pipeline(text: str, document: str, section_ids: list[str] | None = None)
     trace = RunTrace(document=document)
     yield {
         "type": "sections",
-        "sections": [{"id": s.id, "title": s.breadcrumb, "chars": s.char_count} for s in sections],
+        "sections": [
+            {"id": s.id, "title": s.breadcrumb, "chars": s.char_count, "skipped": is_boilerplate(s)}
+            for s in sections
+        ],
     }
 
     all_requirements: list[SectionRequirement] = []
-    failed_sections = 0
+    failed_sections = skipped_sections = 0
     for section in sections:
         if section_ids and section.id not in section_ids:
+            continue
+        if is_boilerplate(section):
+            skipped_sections += 1
+            yield {
+                "type": "section", "id": section.id, "title": section.breadcrumb, "seconds": 0,
+                "requirements": [], "error": None, "usage": None, "skipped": True,
+            }
             continue
 
         start = time.perf_counter()
@@ -58,6 +69,7 @@ def run_pipeline(text: str, document: str, section_ids: list[str] | None = None)
             "requirements": [r.model_dump() for r in requirements],
             "error": error,
             "usage": extract_call.model_dump() if extract_call else None,
+            "skipped": False,
         }
 
     try:
@@ -68,7 +80,7 @@ def run_pipeline(text: str, document: str, section_ids: list[str] | None = None)
     trace.save()
     yield {"type": "summary", "summary": summary.model_dump() if summary else None, "error": error}
 
-    trace.quality = quality_report(all_requirements, summary, failed_sections)
+    trace.quality = quality_report(all_requirements, summary, failed_sections, skipped_sections, trace)
     path = trace.save()
     yield {
         "type": "done",

@@ -13,6 +13,7 @@ from collections import Counter
 
 from app.agent import normalize_text
 from app.schemas import RFPSummary, SectionRequirement
+from app.telemetry import RunTrace
 
 DUPLICATE_THRESHOLD = 0.6  # same threshold the harness uses to match a prediction to a gold item
 
@@ -58,8 +59,14 @@ def quality_report(
     requirements: list[SectionRequirement],
     summary: RFPSummary | None,
     failed_sections: int,
+    skipped_sections: int,
+    trace: RunTrace,
 ) -> dict:
-    """Run-level quality numbers, shown at the end of a run and saved in its trace."""
+    """Run-level quality numbers, shown at the end of a run and saved in its trace.
+
+    `truncated_calls` counts calls that hit max_tokens (treated as looping);
+    `reasoning_tokens` should stay ~0 while thinking is off.
+    """
     judged = [r for r in requirements if r.verdict]
     n = len(requirements)
     return {
@@ -71,6 +78,10 @@ def quality_report(
         "duplicates": sum(r.duplicate_of is not None for r in requirements),
         "needs_review": [r.id for r in requirements if needs_review(r)],
         "failed_sections": failed_sections,
+        "skipped_sections": skipped_sections,
+        "sections_sent": sum(1 for c in trace.calls if c.step == "extract"),
+        "truncated_calls": [f"{c.step} {c.section_id or ''}".strip() for c in trace.calls if c.finish_reason == "length"],
+        "reasoning_tokens": sum(c.reasoning_tokens for c in trace.calls),
         "unknown_ids": len(summary.unknown_ids) if summary else None,
         "uncovered_mandatory": len(summary.uncovered_mandatory) if summary else None,
     }
