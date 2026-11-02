@@ -1,0 +1,127 @@
+{
+  "run_id": "20261102-115651",
+  "document": "synthetic_volunteer_platform.md",
+  "model": "qwen/qwen3-8b",
+  "temperature": 0.2,
+  "max_document_chars": 40000,
+  "max_section_chars": 8000,
+  "quality": {},
+  "totals": {
+    "calls": 9,
+    "prompt_tokens": 4747,
+    "completion_tokens": 1886,
+    "latency_s": 105.9,
+    "tokens_per_s": 17.8,
+    "cost_usd": 0.002175
+  },
+  "calls": [
+    {
+      "step": "extract",
+      "section_id": "S01",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 1. Background",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 550,
+      "completion_tokens": 6,
+      "latency_s": 4.12,
+      "cost_usd": 0.0001032,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S02",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 2. Scope of work > 2.1 Platform",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 542,
+      "completion_tokens": 263,
+      "latency_s": 13.78,
+      "cost_usd": 0.00028166,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S03",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 3. Data protection and compliance",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 566,
+      "completion_tokens": 431,
+      "latency_s": 21.93,
+      "cost_usd": 0.00040358,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S04",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 4. Budget and timeline",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 526,
+      "completion_tokens": 188,
+      "latency_s": 10.01,
+      "cost_usd": 0.00022627999999999998,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S05",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 5. How to respond",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 535,
+      "completion_tokens": 223,
+      "latency_s": 11.42,
+      "cost_usd": 0.00025239999999999996,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "judge",
+      "section_id": "S02",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 506,
+      "completion_tokens": 163,
+      "latency_s": 10.84,
+      "cost_usd": 0.00020518,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 599,
+      "completion_tokens": 300,
+      "latency_s": 16.41,
+      "cost_usd": 0.00031782,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "judge",
+      "section_id": "S04",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 453,
+      "completion_tokens": 149,
+      "latency_s": 8.28,
+      "cost_usd": 0.00018583999999999997,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 470,
+      "completion_tokens": 163,
+      "latency_s": 9.15,
+      "cost_usd": 0.00019869999999999998,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    }
+  ]
+}

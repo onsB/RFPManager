@@ -7,12 +7,12 @@
   "max_section_chars": 8000,
   "quality": {},
   "totals": {
-    "calls": 12,
-    "prompt_tokens": 6760,
-    "completion_tokens": 1287,
-    "latency_s": 270.0,
-    "tokens_per_s": 4.8,
-    "cost_usd": 0.002118
+    "calls": 44,
+    "prompt_tokens": 22175,
+    "completion_tokens": 7012,
+    "latency_s": 1246.5,
+    "tokens_per_s": 5.6,
+    "cost_usd": 0.0089
   },
   "calls": [
     {
@@ -134,6 +134,326 @@
       "completion_tokens": 179,
       "latency_s": 29.65,
       "cost_usd": 0.00020918
+    },
+    {
+      "step": "extract",
+      "section_id": "S09",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Key Information About This Leasing Opportunity",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 1473,
+      "completion_tokens": 1258,
+      "latency_s": 218.99,
+      "cost_usd": 0.0011457399999999997
+    },
+    {
+      "step": "judge",
+      "section_id": "S09",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 1309,
+      "completion_tokens": 1291,
+      "latency_s": 209.71,
+      "cost_usd": 0.0011393199999999999
+    },
+    {
+      "step": "extract",
+      "section_id": "S10",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Jurisdiction",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 484,
+      "completion_tokens": 101,
+      "latency_s": 19.54,
+      "cost_usd": 0.00015782
+    },
+    {
+      "step": "judge",
+      "section_id": "S10",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 382,
+      "completion_tokens": 54,
+      "latency_s": 11.25,
+      "cost_usd": 0.00010655999999999998
+    },
+    {
+      "step": "extract",
+      "section_id": "S11",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Premises Condition",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 345,
+      "completion_tokens": 56,
+      "latency_s": 9.76,
+      "cost_usd": 0.00010129999999999998
+    },
+    {
+      "step": "judge",
+      "section_id": "S11",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 336,
+      "completion_tokens": 39,
+      "latency_s": 7.53,
+      "cost_usd": 8.778e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S12",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Term of the Lease",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 345,
+      "completion_tokens": 50,
+      "latency_s": 9.66,
+      "cost_usd": 9.709999999999999e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S12",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 331,
+      "completion_tokens": 47,
+      "latency_s": 9.07,
+      "cost_usd": 9.248e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S13",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Rent",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 488,
+      "completion_tokens": 76,
+      "latency_s": 16.69,
+      "cost_usd": 0.00014104
+    },
+    {
+      "step": "judge",
+      "section_id": "S13",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 347,
+      "completion_tokens": 49,
+      "latency_s": 8.77,
+      "cost_usd": 9.675999999999999e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S14",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Insurance",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 372,
+      "completion_tokens": 56,
+      "latency_s": 11.66,
+      "cost_usd": 0.00010616
+    },
+    {
+      "step": "judge",
+      "section_id": "S14",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 336,
+      "completion_tokens": 39,
+      "latency_s": 7.91,
+      "cost_usd": 8.778e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S15",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Utilities",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 441,
+      "completion_tokens": 76,
+      "latency_s": 15.44,
+      "cost_usd": 0.00013257999999999998
+    },
+    {
+      "step": "judge",
+      "section_id": "S15",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 357,
+      "completion_tokens": 61,
+      "latency_s": 11.53,
+      "cost_usd": 0.00010695999999999998
+    },
+    {
+      "step": "extract",
+      "section_id": "S16",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Maintenance Responsibilities",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 430,
+      "completion_tokens": 53,
+      "latency_s": 10.84,
+      "cost_usd": 0.00011449999999999999
+    },
+    {
+      "step": "judge",
+      "section_id": "S16",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 326,
+      "completion_tokens": 56,
+      "latency_s": 9.06,
+      "cost_usd": 9.787999999999999e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S17",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Contractors",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 461,
+      "completion_tokens": 237,
+      "latency_s": 35.41,
+      "cost_usd": 0.00024888
+    },
+    {
+      "step": "judge",
+      "section_id": "S17",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 494,
+      "completion_tokens": 196,
+      "latency_s": 30.58,
+      "cost_usd": 0.00022612
+    },
+    {
+      "step": "extract",
+      "section_id": "S18",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Environmental Management",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 490,
+      "completion_tokens": 315,
+      "latency_s": 46.82,
+      "cost_usd": 0.00030869999999999997
+    },
+    {
+      "step": "judge",
+      "section_id": "S18",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 563,
+      "completion_tokens": 229,
+      "latency_s": 37.95,
+      "cost_usd": 0.00026164
+    },
+    {
+      "step": "extract",
+      "section_id": "S19",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Other Terms and Conditions",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 365,
+      "completion_tokens": 66,
+      "latency_s": 12.64,
+      "cost_usd": 0.00011190000000000001
+    },
+    {
+      "step": "judge",
+      "section_id": "S19",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 347,
+      "completion_tokens": 50,
+      "latency_s": 8.15,
+      "cost_usd": 9.746e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S20",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Competitive Process",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 485,
+      "completion_tokens": 67,
+      "latency_s": 14.58,
+      "cost_usd": 0.00013419999999999998
+    },
+    {
+      "step": "judge",
+      "section_id": "S20",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 349,
+      "completion_tokens": 43,
+      "latency_s": 8.48,
+      "cost_usd": 9.292e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S21",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Appointments-Only Site Tours and Additional Information",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 645,
+      "completion_tokens": 89,
+      "latency_s": 20.97,
+      "cost_usd": 0.00017839999999999997
+    },
+    {
+      "step": "judge",
+      "section_id": "S21",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 371,
+      "completion_tokens": 46,
+      "latency_s": 8.7,
+      "cost_usd": 9.897999999999999e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S22",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Initial and Rolling Submission Deadlines",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 440,
+      "completion_tokens": 271,
+      "latency_s": 42.92,
+      "cost_usd": 0.0002689
+    },
+    {
+      "step": "judge",
+      "section_id": "S22",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 523,
+      "completion_tokens": 195,
+      "latency_s": 30.86,
+      "cost_usd": 0.00023063999999999997
+    },
+    {
+      "step": "extract",
+      "section_id": "S23",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Proposal Submission Protocol",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 451,
+      "completion_tokens": 213,
+      "latency_s": 32.61,
+      "cost_usd": 0.00023027999999999997
+    },
+    {
+      "step": "judge",
+      "section_id": "S23",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 466,
+      "completion_tokens": 190,
+      "latency_s": 29.35,
+      "cost_usd": 0.00021688
+    },
+    {
+      "step": "extract",
+      "section_id": "S24",
+      "section_title": "Request for Proposals > SUMMARY OF LEASING OPPORTUNITY > Authority",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 511,
+      "completion_tokens": 71,
+      "latency_s": 14.73,
+      "cost_usd": 0.00014167999999999999
+    },
+    {
+      "step": "judge",
+      "section_id": "S24",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 352,
+      "completion_tokens": 85,
+      "latency_s": 14.28,
+      "cost_usd": 0.00012285999999999997
     }
   ]
 }
