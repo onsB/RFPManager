@@ -79,6 +79,11 @@ function el(tag, cls, text) {
 }
 
 function renderSection(card, event) {
+  if (event.skipped) {
+    card.querySelector("h2 span").textContent = "skipped";
+    card.querySelector(".pending").textContent = "Skipped: boilerplate, not sent to the model.";
+    return;
+  }
   card.querySelector("h2 span").textContent =
     `${event.requirements.length} reqs · ${event.seconds}s`;
   card.querySelector(".pending")?.remove();
