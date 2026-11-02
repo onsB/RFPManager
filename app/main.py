@@ -10,6 +10,9 @@ SECTION_IDS: list[str] = ["S12"]  # empty list = run every section
 
 
 def print_section(event: dict) -> None:
+    if event.get("skipped"):
+        print(f"## [{event['id']}] {event['title']}  (skipped: boilerplate)\n")
+        return
     print(f"## [{event['id']}] {event['title']}  ({len(event['requirements'])} reqs, {event['seconds']}s)")
     if event["error"]:
         print(f"  ERROR: {event['error']}")
@@ -49,6 +52,9 @@ def print_quality(q: dict) -> None:
           f"faithful {pct(q['faithfulness_rate'])} of {q['judged']} judged {q['verdicts'] or ''} · "
           f"{q['duplicates']} duplicates · {q['failed_sections']} failed sections")
     print(f"Needs review: {', '.join(q['needs_review']) or 'none'}")
+    print(f"Sections sent {q['sections_sent']} · skipped {q['skipped_sections']} · "
+          f"hit max_tokens (looping): {', '.join(q['truncated_calls']) or 'none'} · "
+          f"reasoning tokens {q['reasoning_tokens']}")
 
 
 def main() -> None:
