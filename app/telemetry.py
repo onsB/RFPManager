@@ -21,6 +21,17 @@ class CallRecord(BaseModel):
     finish_reason: str | None = None  # "length" = hit max_tokens, which we treat as looping
 
 
+class ToolCallRecord(BaseModel):
+    """One tool call made by an agent: no tokens (tools are plain Python), but timed."""
+
+    agent: str  # "critic" (the model chose it) or "code" (run for the critic's context)
+    name: str
+    arguments: str  # as the model wrote them, which may be malformed JSON
+    result_chars: int
+    ms: float
+    error: str | None = None
+
+
 class RunTrace(BaseModel):
     """an LLM run trace saved to runs/{run_id}.json, for later analysis"""
 
@@ -31,6 +42,7 @@ class RunTrace(BaseModel):
     max_document_chars: int = settings.max_document_chars
     max_section_chars: int = settings.max_section_chars  # changes how sections are split, so what S12 means
     quality: dict = {}  # online evaluation results (app/quality.py), filled at the end of a run
+    tool_calls: list[ToolCallRecord] = []
     calls: list[CallRecord] = []
 
 
@@ -41,6 +53,7 @@ class RunTrace(BaseModel):
         tokens_per_s = round(completion / latency, 1) if latency else 0
         return {
             "calls": len(self.calls),
+            "tool_calls": len(self.tool_calls),
             "prompt_tokens": prompt,
             "completion_tokens": completion,
             "latency_s": round(latency, 1),
