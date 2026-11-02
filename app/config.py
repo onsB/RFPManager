@@ -19,6 +19,26 @@ class Settings(BaseSettings):
     # Local models have small context windows; longer documents are truncated for now.
     max_document_chars: int = 40_000
     max_section_chars: int = 8_000  # ~2k tokens per section
+    # Sections with less text are merged into the next one: a heading-only section still
+    # costs a full LLM call (3-8 s) and returns nothing.
+    min_section_chars: int = 200
+    # Sections whose title matches one of these (case-insensitive regex) are not sent to
+    # the LLM: boilerplate that never states supplier obligations.
+    skip_section_patterns: list[str] = [
+        r"^(table of )?contents$",  # anchored: "Proposal contents" lists requirements
+        r"\bglossary\b",
+        r"\b(acronyms|abbreviations)\b",
+        r"^authority$",
+        r"\bfreedom of information\b|\bfoia\b",
+        r"\bpublic (documents|disclosure|records)\b",
+        r"\bprivacy notice\b",
+        r"\bdisclaimer\b",
+    ]
+
+    # Output caps. A non-thinking extraction of an 8k-char section needs ~1.3k tokens; a
+    # call that hits the cap is almost always the model looping, and is logged as such.
+    max_output_tokens: int = 2048  # extraction and judge calls
+    max_summary_tokens: int = 4096  # synthesis writes the whole approach and risks
 
     # Local inference is free; cost is estimated at Alibaba's hosted price for Qwen3 8B
     # (source and date in ASSUMPTIONS.md). Change both when switching models.
