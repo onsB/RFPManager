@@ -21,8 +21,6 @@ def print_section(event: dict) -> None:
         must = "must" if req["mandatory"] else "    "
         print(f"  {req['id']} [{found}] {must} {req['category']:<14} {req['description']}")
         print(f"           quote: \"{req['quote']}\"")
-        if req["verdict"] not in (None, "same"):
-            print(f"           judge: {req['verdict']}: {req['verdict_reason']}")
         if req["duplicate_of"]:
             print(f"           duplicate of {req['duplicate_of']}")
     print()
@@ -70,6 +68,13 @@ def main() -> None:
             print_section(event)
         elif event["type"] == "summary":
             print_summary(event)
+        elif event["type"] == "judging":
+            print(f"Judging {event['sections']} sections...")
+        elif event["type"] == "verdicts":
+            flagged = {i: v for i, v in event["verdicts"].items() if v["verdict"] != "same"}
+            print(f"  [{event['done']}/{event['total']}] {event['section_id']}: {len(flagged)} flagged")
+            for req_id, v in flagged.items():
+                print(f"      {req_id} {v['verdict'] or 'no verdict'}: {v['reason']}")
         elif event["type"] == "done":
             print(f"Totals: {event['totals']}")
             print_quality(event["quality"])

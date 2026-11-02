@@ -12,8 +12,9 @@ class Settings(BaseSettings):
     # LLM judge used by the eval harness. Empty = reuse llm_model: light enough for a laptop
     # demo, at the cost of self-preference bias (see DECISIONS.md).
     judge_model: str = ""
-    # Judge every requirement during normal runs too (online evaluation). Adds ~1.5s per
-    # requirement with the 8B model; set LIVE_JUDGE=false for faster runs.
+    # Judge every requirement in normal runs too (online evaluation). Runs after the summary
+    # is shown, so it doesn't delay the brief; the review flags fill in a few minutes later.
+    # LIVE_JUDGE=false turns it off.
     live_judge: bool = True
 
     # Local models have small context windows; longer documents are truncated for now.

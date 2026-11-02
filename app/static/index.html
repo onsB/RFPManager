@@ -86,6 +86,11 @@ const results = document.getElementById("results");
 const summaryEl = document.getElementById("summary");
 const qualityEl = document.getElementById("quality");
 
+// The judge runs after the summary, so verdicts arrive later and update what is on screen.
+let sectionEvents = {};  // section id -> its "section" event (requirements are updated in place)
+let summaryState = null; // {reqs, countsEl} of the rendered summary
+let judging = false;
+
 function el(tag, cls, text) {
   const e = document.createElement(tag);
   if (cls) e.className = cls;
@@ -121,6 +126,32 @@ function renderSection(card, event) {
   }
 }
 
+function redrawSection(card, event) {
+  while (card.children.length > 1) card.lastChild.remove();  // keep the heading
+  renderSection(card, event);
+}
+
+function isFlagged(r) { return !r.quote_found || (r.verdict && r.verdict !== "same"); }
+
+function updateCounts() {
+  if (!summaryState) return;
+  const { reqs, countsEl } = summaryState;
+  const must = reqs.filter((r) => r.mandatory).length;
+  const flagged = reqs.filter(isFlagged).length;
+  countsEl.textContent = `${reqs.length} requirements (${must} must · ${reqs.length - must} optional) · ` +
+    (judging ? `${flagged} flagged so far, judge still checking…` : `${flagged} flagged for review`);
+}
+
+function applyVerdicts(event) {
+  const summaryReqs = summaryState ? Object.fromEntries(summaryState.reqs.map((r) => [r.id, r])) : {};
+  const sectionReqs = Object.fromEntries((sectionEvents[event.section_id]?.requirements || []).map((r) => [r.id, r]));
+  for (const [id, v] of Object.entries(event.verdicts)) {
+    for (const r of [sectionReqs[id], summaryReqs[id]]) {
+      if (r) { r.verdict = v.verdict; r.verdict_reason = v.reason; }
+    }
+  }
+}
+
 function pct(v) { return v === null || v === undefined ? "n/a" : Math.round(v * 100) + "%"; }
 
 function renderQuality(q) {
@@ -149,7 +180,9 @@ function renderSummary(event) {
   // Duplicates stay visible in the section cards (details view), not in the summary.
   const reqs = s.requirements.filter((r) => !r.duplicate_of);
   const must = reqs.filter((r) => r.mandatory);
-  const flagged = reqs.filter((r) => !r.quote_found || (r.verdict && r.verdict !== "same"));
+  const countsEl = el("p", "muted");
+  summaryState = { reqs, countsEl };
+  updateCounts();
 
   const header = el("div", "headline");
   const due = el("p", "due");
@@ -162,8 +195,7 @@ function renderSummary(event) {
   header.append(
     el("h2", "", `${s.project_title} · ${s.client}`),
     due,
-    el("p", "muted", `${reqs.length} requirements (${must.length} must · ${reqs.length - must.length} optional)` +
-                     ` · ${flagged.length} flagged for review`),
+    countsEl,
   );
   card.append(header, el("p", "", s.overview));
 
@@ -235,6 +267,9 @@ form.addEventListener("submit", async (e) => {
   summaryEl.innerHTML = "";
   qualityEl.innerHTML = "";
   statsEl.textContent = "";
+  sectionEvents = {};
+  summaryState = null;
+  judging = false;
   runBtn.disabled = true;
   toggleBtn.hidden = false;
   detailsLabel = "extraction details";
@@ -275,6 +310,7 @@ form.addEventListener("submit", async (e) => {
         } else if (event.type === "section") {
           done++;
           reqCount += event.requirements.length;
+          sectionEvents[event.id] = event;
           renderSection(cards[event.id], event);
           progressEl.textContent = done < total
             ? `Reading section ${done + 1} of ${total}…`
@@ -282,7 +318,19 @@ form.addEventListener("submit", async (e) => {
           statsEl.textContent = ` · ${reqCount} requirements so far`;
         } else if (event.type === "summary") {
           renderSummary(event);
+          progressEl.textContent = "Brief ready";
+        } else if (event.type === "judging") {
+          judging = true;
+          updateCounts();
+          progressEl.textContent = `Brief ready · judge checking 0 of ${event.sections} sections…`;
+        } else if (event.type === "verdicts") {
+          applyVerdicts(event);
+          if (sectionEvents[event.section_id]) redrawSection(cards[event.section_id], sectionEvents[event.section_id]);
+          updateCounts();
+          progressEl.textContent = `Brief ready · judge checking ${event.done} of ${event.total} sections…`;
         } else if (event.type === "done") {
+          judging = false;
+          updateCounts();
           renderQuality(event.quality);
           const t = event.totals;
           progressEl.textContent = "Done";
