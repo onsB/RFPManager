@@ -92,13 +92,14 @@ def _run_tool(ctx: ToolContext, name: str, raw_args: str, trace: RunTrace | None
     return result
 
 
-def _call(messages: list[dict], trace: RunTrace | None, tools: bool = True):
+def _call(messages: list[dict], trace: RunTrace | None, tools: bool = True, require_tool: bool = False):
+    tool_args = {"tools": AGENT_TOOL_SPECS, "tool_choice": "required" if require_tool else "auto"} if tools else {}
     return traced_completion(
         client, trace, step="critic",
         model=settings.llm_model,
         max_tokens=settings.max_summary_tokens,
         messages=messages,
-        **({"tools": AGENT_TOOL_SPECS} if tools else {}),
+        **tool_args,
         **THINKING_SAMPLING,
     )
 
@@ -139,10 +140,12 @@ def review_summary(ctx: ToolContext, trace: RunTrace | None) -> Review:
     seen_ids = _ids(messages[1]["content"])  # ids the critic has actually been shown
     read_rfp = pushed_back = False
 
-    for _ in range(settings.agent_max_steps):
-        message = _call(messages, trace).choices[0].message
+    for step in range(settings.agent_max_steps):
+        # The first turn must call a tool (the model picks which, and what to search): without
+        # this, the 8B critic answered from the checks alone and never read the RFP.
+        message = _call(messages, trace, require_tool=step == 0).choices[0].message
         if not message.tool_calls:
-            if not read_rfp and not pushed_back:  # answered without checking the source: once, send it back
+            if not read_rfp and not pushed_back:  # fallback if the server ignores tool_choice: send it back once
                 pushed_back = True
                 messages += [{"role": "assistant", "content": _strip_think(message.content)},
                              {"role": "user", "content": PUSH_BACK}]
