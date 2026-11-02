@@ -7,8 +7,10 @@
 - These documents are public notices, not client data. They contain the names and
   emails of procurement contacts, which were published for bidders to use;
   they are kept as-is / redacted.
-- Synthetic briefs in eval/ were written for this project and contain planted
-  traps (see DECISIONS.md).
+- Synthetic briefs were written for this project, with fictional organisations: the
+  gold-labelled test brief in `eval/briefs/` and three demo briefs in `inputs/demo/`. Both
+  contain planted traps (see DECISIONS.md and `inputs/README.md`). The real documents are in
+  `inputs/public/`.
 
 ## Scope
 - "RFP brief" is read broadly: RFPs, invitations to tender and RFQs. Documents that

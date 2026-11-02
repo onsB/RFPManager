@@ -5,7 +5,7 @@ from app.documents import load_document
 from app.pipeline import run_pipeline
 
 # Edit these to test from VS Code: press Run (or F5), no terminal arguments needed.
-RFP_PATH = Path(__file__).parent.parent / "inputs" / "InvitationtoTender_CommunitiesofPracticeDevelopment.pdf"
+RFP_PATH = Path(__file__).parent.parent / "inputs" / "public" / "InvitationtoTender_CommunitiesofPracticeDevelopment.pdf"
 SECTION_IDS: list[str] = ["S12"]  # empty list = run every section
 
 
@@ -21,8 +21,6 @@ def print_section(event: dict) -> None:
         must = "must" if req["mandatory"] else "    "
         print(f"  {req['id']} [{found}] {must} {req['category']:<14} {req['description']}")
         print(f"           quote: \"{req['quote']}\"")
-        if req["verdict"] not in (None, "same"):
-            print(f"           judge: {req['verdict']}: {req['verdict_reason']}")
         if req["duplicate_of"]:
             print(f"           duplicate of {req['duplicate_of']}")
     print()
@@ -30,10 +28,16 @@ def print_section(event: dict) -> None:
 
 def print_summary(event: dict) -> None:
     if event["error"]:
-        print(f"Summary failed: {event['error']}\n")
+        what = f"Revision {event['revision']} failed, previous brief kept" if event["revision"] else "Summary failed"
+        print(f"{what}: {event['error']}\n")
         return
     s = event["summary"]
-    print(f"# {s['project_title']} ({s['client']})\n\n{s['overview']}\n")
+    if event["revision"]:
+        print(f"=== Revised brief (after review round {event['revision']}) ===")
+    print(f"# {s['project_title']} ({s['client']})")
+    d = s["deadline"]
+    print(f"Due: {d['date']}  ({d['label']}, {d['section_id']})" if d else "Due: no submission deadline found")
+    print(f"\n{s['overview']}\n")
     print("Approach:")
     for phase in s["approach"]:
         print(f"  - {phase['phase']}: {phase['description']}  {phase['requirement_ids']}")
@@ -55,6 +59,21 @@ def print_quality(q: dict) -> None:
     print(f"Sections sent {q['sections_sent']} · skipped {q['skipped_sections']} · "
           f"hit max_tokens (looping): {', '.join(q['truncated_calls']) or 'none'} · "
           f"reasoning tokens {q['reasoning_tokens']}")
+    print(f"Review: {q['review_rounds']} rounds · approved {q['approved']} · {q['agent_steps']} agent steps · "
+          f"{q['tool_calls']} tool calls {q['tools_used'] or ''} · {q['tool_errors']} tool errors")
+
+
+def print_review(event: dict) -> None:
+    if event["error"]:
+        print(f"Review round {event['round']}: reviewer failed, brief kept ({event['error']})\n")
+        return
+    verdict = "approved" if event["approved"] else f"{len(event['issues'])} issues, sent back for revision"
+    print(f"Review round {event['round']}: {verdict}")
+    for i in event["issues"]:
+        print(f"  [{i['kind']}] {i['detail']}\n      fix: {i['fix']}  (checked {', '.join(i['evidence']) or 'nothing'})")
+    if event["unverified_evidence"]:
+        print(f"  dropped evidence the reviewer never saw: {', '.join(event['unverified_evidence'])}")
+    print()
 
 
 def main() -> None:
@@ -67,6 +86,17 @@ def main() -> None:
             print_section(event)
         elif event["type"] == "summary":
             print_summary(event)
+        elif event["type"] == "reviewing":
+            print(f"Reviewer checking the brief (round {event['round']})...")
+        elif event["type"] == "review":
+            print_review(event)
+        elif event["type"] == "judging":
+            print(f"Judging {event['sections']} sections...")
+        elif event["type"] == "verdicts":
+            flagged = {i: v for i, v in event["verdicts"].items() if v["verdict"] != "same"}
+            print(f"  [{event['done']}/{event['total']}] {event['section_id']}: {len(flagged)} flagged")
+            for req_id, v in flagged.items():
+                print(f"      {req_id} {v['verdict'] or 'no verdict'}: {v['reason']}")
         elif event["type"] == "done":
             print(f"Totals: {event['totals']}")
             print_quality(event["quality"])

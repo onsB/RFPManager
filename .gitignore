@@ -3,6 +3,6 @@
 __pycache__/
 *.pyc
 data/
-notebooks/explore.ipynb
 .claude/settings.local.json
+AGENTIC_PLAN.md
 

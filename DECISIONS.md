@@ -55,6 +55,69 @@ Each entry: what I chose, what I considered instead, and why.
   gives an eval metric (share of quotes found).
 - **Limit:** it checks the wording, not the meaning. See the failure mode below.
 
+### Submission deadline found by code, not by the LLM
+- **Chose:** `find_deadline()` in `app/facts.py` scans the document text for dates and
+  classifies each by the words just before it: it must name a submission and a deadline,
+  and not be about questions, site visits, award or delivery. Shown under the summary title.
+- **Instead of:** taking the deadline from the extracted requirements.
+- **Why:** it is the most important fact in an RFP, and the LLM dropped it (the Key Dates
+  regression). A regex can't drop it on a bad run, and it cites the section it came from.
+- **Checked on all 6 sample documents:** right deadline in the 5 that have one (four
+  formats: date lists, table cells, form fields, sentences); none for the EOI, which has none.
+  It skips the decoys: the Beach Clubs question deadline and the Hertford delivery deadline.
+  Later checked on the 3 demo briefs (`inputs/demo/`), which added "12 noon on…" and a
+  weekday before the date ("3:00 PM PST on Friday, December 11, 2026"): 8/8 correct, with
+  question, site-visit, award and report dates as decoys.
+- **Limit:** English month names and numeric dates only; relative dates ("four weeks after
+  publication") aren't found. When nothing is found, the page says so.
+
+## Agentic step: critic agent with tools
+
+### Agents only where judgement pays off
+- **Chose:** extraction stays a deterministic map step (one call per section). Agency is
+  added only to reviewing the brief: a critic agent (`app/critic.py`) calls tools
+  (`app/tools.py`: `search_rfp` BM25, `get_section`, `list_requirements`), returns issues,
+  and the writer revises (`synthesize_summary` with `issues`), up to `max_review_rounds` (2).
+- **Instead of:** a fully autonomous agent over the raw document: slower, harder to evaluate,
+  and extraction doesn't need decisions.
+- **Deterministic checks run by code, not chosen by the model:** `check_coverage` and
+  `get_key_facts` go into the critic's first message. First version left them as tools: on
+  the Beach Clubs RFP the critic called `check_coverage` once, spent all 6 issue slots
+  restating its list, and never read the RFP (0 searches, contradiction missed).
+- **`tool_choice="required"` on the first turn:** without it the critic answered from the
+  checks alone in every round (54 s wasted per round before a push-back turn). With it, the
+  first turn is ~3 s and calls 1-3 tools; the model still picks which tools and what to search.
+- **Coverage as one code issue**, with "leave out the issuer's actions": insisting on 100%
+  coverage made the writer plan NPS's own actions (extraction errors) and bolt on generic risks.
+- **Contradictions are risks, not blockers:** the writer can't fix the client's document. The
+  fix is a risk naming both values, mitigated by a clarification question.
+
+### Guards (failure modes)
+- Looping: `agent_max_steps` (6) per review, `max_review_rounds` (2), max_tokens per call.
+- Context overflow: tool results cut to `tool_result_chars` (4,000).
+- Malformed tool calls: the error goes back as the tool result; the model retries.
+- Hallucinated evidence: ids the critic was never shown are dropped and counted.
+- False approval: `approved` recomputed in code from blocking issue kinds.
+- Lazy revision: code logs `revision_changed` (one run returned the draft unchanged).
+- Any agent failure keeps the current brief (graceful degradation); `AGENT_REVIEW=false`
+  reproduces the fixed pipeline (checked: no review events, 0 agent calls).
+
+### Measured (demo briefs, qwen3-8b, judge off)
+| Brief | Agent time / tokens | Critic tools chosen | Found |
+|---|---|---|---|
+| Harbourside | 189 s / 27K | search_rfp ×2 | planted contract-start contradiction (11 vs 4 Jan 2027); criteria with weights |
+| Port Alder | 126 s / 20K | search_rfp, get_section, list_requirements (×2 rounds) | evaluation criteria, a wrong-party risk; revised risks name the uncosted roof/grease trap works, $2M insurance, permits |
+
+- **Not yet good enough:** neither brief was approved within 2 rounds. The writer rarely
+  restructures the approach by evaluation criteria. Port Alder's term contradiction (5 vs 3
+  years) was missed (no date, so not in the key facts). In round 2 the critic asked for cost
+  estimates the RFP doesn't give (over-strict generic_risk). On Harbourside the writer
+  silently picked one of the two contract dates.
+- **Not rerun after the fixes:** the Beach Clubs acceptance test (first version: 332 s of
+  agent time, failed as described above).
+- **Next steps (not built):** parallel extraction (LM Studio slots), embedding search and
+  dedupe, judge calibration against hand labels, A/B with N runs per brief.
+
 ## Observability
 
 ### Own telemetry wrapper instead of Phoenix / Langfuse
@@ -109,14 +172,23 @@ Each entry: what I chose, what I considered instead, and why.
 
 ### Online evaluation on every run
 - **Chose:** the checks that need no gold labels (quote found, judge faithfulness,
-  duplicates, summary grounding) run inside the pipeline on every document, right after
-  each section is extracted. Flagged requirements are shown with the judge's reason; the
-  run's quality report is saved in its trace.
+  duplicates, summary grounding) run inside the pipeline on every document. Flagged
+  requirements are shown with the judge's reason; the run's quality report is saved in its trace.
 - **Why:** gold labels only exist for the test brief. On real uploads, these checks are
   the only signal, and they turn "review 60 requirements" into "review the 10 flagged ones".
   Saving them in the trace makes quality comparable across runs (dashboard next).
-- **Trade-off:** the judge adds ~1.5 s per requirement with the 8B model (about +50% run
-  time). `LIVE_JUDGE=false` turns it off; the deterministic checks stay on.
+- **Trade-off:** the judge adds ~1 s per requirement with the 8B model (about +40% run time).
+- **Judge after the summary, not during extraction:** the judge first ran right after each
+  section, so the brief waited for every verdict. Nothing before the summary uses them (the
+  synthesis plans from all requirements, flagged or not), so the judge now runs after the
+  summary event: the brief appears as soon as it's written and the "flagged for review"
+  count fills in section by section. Same total time, but on the synthetic brief the
+  brief appeared at 55 s instead of ~78 s, and the review numbers ~23 s later.
+  A background job overnight was rejected: the flagged numbers are part of the demo.
+  `LIVE_JUDGE=false` turns the judge off; the deterministic checks stay on.
+- **If the critic loop is added:** it needs verdicts before the summary (to re-extract
+  flagged sections), so it would move the judge back before synthesis, for flagged
+  sections at least. That's the cost of a loop, and it should be measured.
 - **Shared code:** the harness and the pipeline use the same quote-overlap function
   (`app/quality.py`) for gold matching and duplicate detection.
 

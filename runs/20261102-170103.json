@@ -1,0 +1,352 @@
+{
+  "run_id": "20261102-170103",
+  "document": "port_alder_beach_cafe_rfp.md",
+  "model": "qwen/qwen3-8b",
+  "temperature": 0.2,
+  "max_document_chars": 40000,
+  "max_section_chars": 8000,
+  "quality": {
+    "requirements": 21,
+    "quote_found_rate": 0.905,
+    "judged": 0,
+    "faithfulness_rate": null,
+    "verdicts": {},
+    "duplicates": 6,
+    "needs_review": [
+      "S05-R02",
+      "S05-R03",
+      "S05-R04",
+      "S07-R02",
+      "S07-R03",
+      "S09-R03"
+    ],
+    "failed_sections": 0,
+    "skipped_sections": 0,
+    "sections_sent": 9,
+    "truncated_calls": [],
+    "reasoning_tokens": 0,
+    "unknown_ids": 0,
+    "uncovered_mandatory": 1,
+    "review_rounds": 2,
+    "approved": false,
+    "review_history": [
+      {
+        "round": 1,
+        "approved": false,
+        "issues_by_kind": {
+          "structure": 1,
+          "wrong_party": 1
+        },
+        "unverified_evidence": [],
+        "error": null,
+        "revision_changed": true
+      },
+      {
+        "round": 2,
+        "approved": false,
+        "issues_by_kind": {
+          "uncovered_mandatory": 1,
+          "generic_risk": 4,
+          "structure": 1,
+          "missing_fact": 1
+        },
+        "unverified_evidence": [],
+        "error": null,
+        "revision_changed": true
+      }
+    ],
+    "agent_steps": 4,
+    "tool_calls": 6,
+    "tool_errors": 0,
+    "tools_used": {
+      "search_rfp": 2,
+      "get_section": 2,
+      "list_requirements": 2
+    }
+  },
+  "tool_calls": [
+    {
+      "agent": "code",
+      "name": "check_coverage",
+      "arguments": "{}",
+      "result_chars": 127,
+      "ms": 0.0,
+      "error": null
+    },
+    {
+      "agent": "code",
+      "name": "get_key_facts",
+      "arguments": "{}",
+      "result_chars": 947,
+      "ms": 2.0,
+      "error": null
+    },
+    {
+      "agent": "critic",
+      "name": "search_rfp",
+      "arguments": "{\"query\":\"evaluation criteria\",\"k\":3}",
+      "result_chars": 580,
+      "ms": 1.0,
+      "error": null
+    },
+    {
+      "agent": "critic",
+      "name": "get_section",
+      "arguments": "{\"section_id\":\"S08\"}",
+      "result_chars": 587,
+      "ms": 0.0,
+      "error": null
+    },
+    {
+      "agent": "critic",
+      "name": "list_requirements",
+      "arguments": "{\"category\":\"commercial\",\"mandatory\":true,\"section_id\":\"S02\"}",
+      "result_chars": 143,
+      "ms": 0.0,
+      "error": null
+    },
+    {
+      "agent": "code",
+      "name": "check_coverage",
+      "arguments": "{}",
+      "result_chars": 223,
+      "ms": 0.0,
+      "error": null
+    },
+    {
+      "agent": "code",
+      "name": "get_key_facts",
+      "arguments": "{}",
+      "result_chars": 947,
+      "ms": 2.0,
+      "error": null
+    },
+    {
+      "agent": "critic",
+      "name": "search_rfp",
+      "arguments": "{\"query\":\"evaluation criteria\",\"k\":3}",
+      "result_chars": 580,
+      "ms": 0.8,
+      "error": null
+    },
+    {
+      "agent": "critic",
+      "name": "get_section",
+      "arguments": "{\"section_id\":\"S08\"}",
+      "result_chars": 587,
+      "ms": 0.0,
+      "error": null
+    },
+    {
+      "agent": "critic",
+      "name": "list_requirements",
+      "arguments": "{\"category\":\"commercial\",\"mandatory\":true,\"section_id\":\"S02\"}",
+      "result_chars": 143,
+      "ms": 0.0,
+      "error": null
+    }
+  ],
+  "totals": {
+    "calls": 16,
+    "tool_calls": 10,
+    "prompt_tokens": 22639,
+    "completion_tokens": 6929,
+    "latency_s": 178.7,
+    "tokens_per_s": 38.8,
+    "cost_usd": 0.008925
+  },
+  "calls": [
+    {
+      "step": "extract",
+      "section_id": "S01",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession",
+      "model": "qwen3-8b",
+      "prompt_tokens": 531,
+      "completion_tokens": 6,
+      "latency_s": 4.6,
+      "cost_usd": 9.978e-05,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S02",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession > Key dates",
+      "model": "qwen3-8b",
+      "prompt_tokens": 590,
+      "completion_tokens": 75,
+      "latency_s": 1.72,
+      "cost_usd": 0.00015869999999999998,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S03",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession > The opportunity",
+      "model": "qwen3-8b",
+      "prompt_tokens": 565,
+      "completion_tokens": 6,
+      "latency_s": 0.29,
+      "cost_usd": 0.0001059,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S04",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession > Operating requirements",
+      "model": "qwen3-8b",
+      "prompt_tokens": 617,
+      "completion_tokens": 330,
+      "latency_s": 6.77,
+      "cost_usd": 0.00034205999999999993,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S05",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession > Condition of the premises",
+      "model": "qwen3-8b",
+      "prompt_tokens": 582,
+      "completion_tokens": 227,
+      "latency_s": 4.88,
+      "cost_usd": 0.00026366,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S06",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession > Financial terms",
+      "model": "qwen3-8b",
+      "prompt_tokens": 576,
+      "completion_tokens": 197,
+      "latency_s": 4.24,
+      "cost_usd": 0.00024157999999999997,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S07",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession > Insurance",
+      "model": "qwen3-8b",
+      "prompt_tokens": 545,
+      "completion_tokens": 282,
+      "latency_s": 6.07,
+      "cost_usd": 0.0002955,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S08",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession > Evaluation and selection",
+      "model": "qwen3-8b",
+      "prompt_tokens": 588,
+      "completion_tokens": 6,
+      "latency_s": 0.34,
+      "cost_usd": 0.00011004,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "extract",
+      "section_id": "S09",
+      "section_title": "Request for Proposals: Gull Point Beach Caf\u00e9 and Kayak Rental Concession > Proposal contents",
+      "model": "qwen3-8b",
+      "prompt_tokens": 538,
+      "completion_tokens": 189,
+      "latency_s": 3.99,
+      "cost_usd": 0.00022914,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "synthesize",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 1711,
+      "completion_tokens": 918,
+      "latency_s": 20.08,
+      "cost_usd": 0.0009505799999999999,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2218,
+      "completion_tokens": 85,
+      "latency_s": 3.17,
+      "cost_usd": 0.00045874,
+      "reasoning_tokens": 0,
+      "finish_reason": "tool_calls"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2660,
+      "completion_tokens": 1058,
+      "latency_s": 23.19,
+      "cost_usd": 0.0012193999999999998,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "revise",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2737,
+      "completion_tokens": 858,
+      "latency_s": 23.3,
+      "cost_usd": 0.0010932599999999998,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2267,
+      "completion_tokens": 85,
+      "latency_s": 8.21,
+      "cost_usd": 0.00046756,
+      "reasoning_tokens": 0,
+      "finish_reason": "tool_calls"
+    },
+    {
+      "step": "critic",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 2709,
+      "completion_tokens": 1489,
+      "latency_s": 34.89,
+      "cost_usd": 0.0015299200000000002,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    },
+    {
+      "step": "revise",
+      "section_id": null,
+      "section_title": null,
+      "model": "qwen3-8b",
+      "prompt_tokens": 3205,
+      "completion_tokens": 1118,
+      "latency_s": 32.96,
+      "cost_usd": 0.0013595,
+      "reasoning_tokens": 0,
+      "finish_reason": "stop"
+    }
+  ]
+}

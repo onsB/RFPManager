@@ -39,7 +39,8 @@ structured output works; to try another one, change this value only.
 | `LLM_API_KEY` | `lm-studio` | Ignored by LM Studio, required by the SDK |
 | `LLM_MODEL` | `qwen/qwen3-8b` | Model identifier in LM Studio |
 | `JUDGE_MODEL` | *(empty)* | Model for the faithfulness judge; empty reuses `LLM_MODEL` |
-| `LIVE_JUDGE` | `true` | Judge every requirement during normal runs (adds ~1.5 s each) |
+| `AGENT_REVIEW` | `true` | Critic agent reviews the draft brief with tools and sends it back for revision (`false` = draft only, for A/B) |
+| `LIVE_JUDGE` | `true` | Judge every requirement in normal runs, after the brief is shown (review flags fill in a few minutes later) |
 
 ### 4. Run
 
@@ -57,7 +58,8 @@ API docs are at http://127.0.0.1:8000/docs.
 **Command line**
 
 ```bash
-uv run python -m app.main inputs/InvitationtoTender_CommunitiesofPracticeDevelopment.pdf
+uv run python -m app.main inputs/public/InvitationtoTender_CommunitiesofPracticeDevelopment.pdf
+uv run python -m app.main inputs/demo/harbourside_tenant_portal_itt.md   # short synthetic demo brief
 ```
 
 Without an argument it uses `RFP_PATH` and `SECTION_IDS` at the top of `app/main.py`,

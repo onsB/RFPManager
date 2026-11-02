@@ -61,12 +61,28 @@ def quality_report(
     failed_sections: int,
     skipped_sections: int,
     trace: RunTrace,
+    review_log: list[dict] | None = None,
 ) -> dict:
     """Run-level quality numbers, shown at the end of a run and saved in its trace.
 
     `truncated_calls` counts calls that hit max_tokens (treated as looping);
-    `reasoning_tokens` should stay ~0 while thinking is off.
+    `reasoning_tokens` should stay ~0 while thinking is off (the critic thinks, so not for it).
+    Review fields: `review_history` has each round's issues by kind, so round 1 (the draft)
+    against the last round shows what the critic loop changed. `approved` is None when
+    the review is off or failed.
     """
+    review_log = review_log or []
+    last_ok = next((r for r in reversed(review_log) if not r.get("error")), None)
+    review = {
+        "review_rounds": len(review_log),
+        "approved": last_ok["approved"] if last_ok else None,
+        "review_history": review_log,
+        "agent_steps": sum(1 for c in trace.calls if c.step == "critic"),
+        # Tools the critic chose to call; code also runs check_coverage and get_key_facts for it.
+        "tool_calls": sum(1 for t in trace.tool_calls if t.agent == "critic"),
+        "tool_errors": sum(1 for t in trace.tool_calls if t.error),
+        "tools_used": dict(Counter(t.name for t in trace.tool_calls if t.agent == "critic")),
+    }
     judged = [r for r in requirements if r.verdict]
     n = len(requirements)
     return {
@@ -84,4 +100,5 @@ def quality_report(
         "reasoning_tokens": sum(c.reasoning_tokens for c in trace.calls),
         "unknown_ids": len(summary.unknown_ids) if summary else None,
         "uncovered_mandatory": len(summary.uncovered_mandatory) if summary else None,
+        **review,
     }

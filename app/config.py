@@ -12,9 +12,17 @@ class Settings(BaseSettings):
     # LLM judge used by the eval harness. Empty = reuse llm_model: light enough for a laptop
     # demo, at the cost of self-preference bias (see DECISIONS.md).
     judge_model: str = ""
-    # Judge every requirement during normal runs too (online evaluation). Adds ~1.5s per
-    # requirement with the 8B model; set LIVE_JUDGE=false for faster runs.
+    # Judge every requirement in normal runs too (online evaluation). Runs after the summary
+    # is shown, so it doesn't delay the brief; the review flags fill in a few minutes later.
+    # LIVE_JUDGE=false turns it off.
     live_judge: bool = True
+
+    # Critic agent: reviews the draft brief with tools and sends it back for revision.
+    # AGENT_REVIEW=false gives the fixed pipeline (draft only), for A/B comparisons.
+    agent_review: bool = True
+    agent_max_steps: int = 6  # LLM turns per review: the anti-looping guard on the tool loop
+    max_review_rounds: int = 2  # review -> revise rounds before keeping the latest brief
+    tool_result_chars: int = 4_000  # tool results are cut to this, so they can't flood the context
 
     # Local models have small context windows; longer documents are truncated for now.
     max_document_chars: int = 40_000
