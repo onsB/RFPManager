@@ -17,7 +17,17 @@
   button { background: var(--accent); color: #fff; border: 0; border-radius: 6px; padding: 8px 16px;
            font: inherit; cursor: pointer; }
   button:disabled { opacity: .5; cursor: default; }
-  #status { color: var(--muted); margin: 16px 0; }
+  button.secondary { background: none; color: var(--accent); border: 1px solid var(--accent); }
+  .toolbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 16px 0; }
+  #status { color: var(--muted); margin: 0; }
+  /* Debug views (metrics, section cards, ids, checks) only show after "Show details". */
+  body:not(.details) .details-only { display: none !important; }
+  .headline { border-bottom: 1px solid var(--line); padding-bottom: 8px; margin-bottom: 8px; }
+  .muted { color: var(--muted); margin: 4px 0 0; }
+  .due { margin: 6px 0 0; font-size: 17px; color: var(--bad); }
+  .group { margin: 4px 0; }
+  .group summary { cursor: pointer; font-weight: 600; text-transform: capitalize; }
+  .check { display: block; padding: 2px 0 2px 20px; text-indent: -20px; }
   .section { background: var(--card); border: 1px solid var(--line); border-radius: 8px;
              margin-bottom: 12px; padding: 12px 16px; }
   .section h2 { font-size: 15px; margin: 0; display: flex; justify-content: space-between; gap: 12px; }
@@ -57,16 +67,21 @@
     <button id="run">Extract requirements</button>
   </form>
 
-  <p id="status"></p>
-  <div id="quality"></div>
+  <div class="toolbar">
+    <p id="status"><span id="progress"></span><span id="stats" class="details-only"></span></p>
+    <button id="toggle" class="secondary" type="button" hidden>Show details</button>
+  </div>
+  <div id="quality" class="details-only"></div>
   <div id="summary"></div>
-  <div id="results"></div>
+  <div id="results" class="details-only"></div>
 </main>
 
 <script>
 const form = document.getElementById("form");
 const runBtn = document.getElementById("run");
-const statusEl = document.getElementById("status");
+const progressEl = document.getElementById("progress");
+const statsEl = document.getElementById("stats");
+const toggleBtn = document.getElementById("toggle");
 const results = document.getElementById("results");
 const summaryEl = document.getElementById("summary");
 const qualityEl = document.getElementById("quality");
@@ -131,43 +146,100 @@ function renderSummary(event) {
   if (event.error) { card.append(el("p", "error", "Summary failed: " + event.error)); return; }
 
   const s = event.summary;
-  card.append(el("h2", "", `${s.project_title} · ${s.client}`), el("p", "", s.overview));
+  // Duplicates stay visible in the section cards (details view), not in the summary.
+  const reqs = s.requirements.filter((r) => !r.duplicate_of);
+  const must = reqs.filter((r) => r.mandatory);
+  const flagged = reqs.filter((r) => !r.quote_found || (r.verdict && r.verdict !== "same"));
+
+  const header = el("div", "headline");
+  const due = el("p", "due");
+  if (s.deadline) {
+    due.append(el("strong", "", "Due: " + s.deadline.date), " ",
+               el("span", "ids", `${s.deadline.label} · ${s.deadline.section_id}`));
+  } else {
+    due.append(el("span", "ids", "No submission deadline found in the document: check it manually."));
+  }
+  header.append(
+    el("h2", "", `${s.project_title} · ${s.client}`),
+    due,
+    el("p", "muted", `${reqs.length} requirements (${must.length} must · ${reqs.length - must.length} optional)` +
+                     ` · ${flagged.length} flagged for review`),
+  );
+  card.append(header, el("p", "", s.overview));
 
   card.append(el("h3", "", "Approach"));
   const phases = el("ol");
   for (const p of s.approach) {
     const li = el("li");
     li.append(el("strong", "", p.phase + ": "), p.description, " ",
-              el("span", "ids", p.requirement_ids.join(", ")));
+              el("span", "ids details-only", p.requirement_ids.join(", ")));
     phases.append(li);
   }
   card.append(phases);
 
-  card.append(el("h3", "", "Risks"));
+  // Top 5 risks by severity; the rest only in the details view.
+  const order = { high: 0, medium: 1, low: 2 };
+  const sorted = [...s.risks].sort((a, b) => order[a.severity] - order[b.severity]);
+  card.append(el("h3", "", "Top risks"));
   const risks = el("ul");
-  for (const r of s.risks) {
-    const li = el("li");
+  sorted.forEach((r, i) => {
+    const li = el("li", i < 5 ? "" : "details-only");
     li.append(el("span", "tag " + r.severity, r.severity), " ", r.description,
               el("div", "quote", "Mitigation: " + r.mitigation),
-              el("span", "ids", r.requirement_ids.join(", ")));
+              el("span", "ids details-only", r.requirement_ids.join(", ")));
     risks.append(li);
-  }
+  });
   card.append(risks);
 
-  card.append(el("h3", "", "Checks"));
-  card.append(el("p", s.unknown_ids.length ? "error" : "",
-    `Made-up requirement ids: ${s.unknown_ids.join(", ") || "none"}`));
-  card.append(el("p", s.uncovered_mandatory.length ? "error" : "",
-    `Mandatory requirements no phase covers: ${s.uncovered_mandatory.join(", ") || "none"}`));
+  // Must-haves only, grouped by category, one checkbox each.
+  card.append(el("h3", "", `Compliance checklist (${must.length} must-haves)`));
+  const groups = {};
+  for (const r of must) (groups[r.category] ||= []).push(r);
+  for (const [category, items] of Object.entries(groups)) {
+    const group = el("details", "group");
+    group.append(el("summary", "", `${category} (${items.length})`));
+    for (const r of items) {
+      const label = el("label", "check");
+      const box = el("input");
+      box.type = "checkbox";
+      label.append(box, " ", r.description, " ", el("span", "ids details-only", r.id));
+      group.append(label);
+    }
+    card.append(group);
+  }
+
+  const checks = el("div", "details-only");
+  checks.append(
+    el("h3", "", "Checks"),
+    el("p", s.unknown_ids.length ? "error" : "",
+       `Made-up requirement ids: ${s.unknown_ids.join(", ") || "none"}`),
+    el("p", s.uncovered_mandatory.length ? "error" : "",
+       `Mandatory requirements no phase covers: ${s.uncovered_mandatory.join(", ") || "none"}`),
+  );
+  card.append(checks);
 }
+
+let detailsLabel = "extraction details";
+function updateToggle() {
+  const on = document.body.classList.contains("details");
+  toggleBtn.textContent = `${on ? "▾ Hide" : "▸ Show"} ${detailsLabel}`;
+}
+toggleBtn.addEventListener("click", () => {
+  document.body.classList.toggle("details");
+  updateToggle();
+});
 
 form.addEventListener("submit", async (e) => {
   e.preventDefault();
   results.innerHTML = "";
   summaryEl.innerHTML = "";
   qualityEl.innerHTML = "";
+  statsEl.textContent = "";
   runBtn.disabled = true;
-  statusEl.textContent = "Reading document…";
+  toggleBtn.hidden = false;
+  detailsLabel = "extraction details";
+  updateToggle();
+  progressEl.textContent = "Reading document…";
 
   const body = new FormData();
   body.append("file", document.getElementById("file").files[0]);
@@ -204,21 +276,27 @@ form.addEventListener("submit", async (e) => {
           done++;
           reqCount += event.requirements.length;
           renderSection(cards[event.id], event);
-          statusEl.textContent = done < total
-            ? `${done}/${total} sections · ${reqCount} requirements`
-            : `${reqCount} requirements · writing summary…`;
+          progressEl.textContent = done < total
+            ? `Reading section ${done + 1} of ${total}…`
+            : "Writing summary…";
+          statsEl.textContent = ` · ${reqCount} requirements so far`;
         } else if (event.type === "summary") {
           renderSummary(event);
         } else if (event.type === "done") {
           renderQuality(event.quality);
           const t = event.totals;
-          statusEl.textContent = `Done: ${done}/${total} sections · ${reqCount} requirements · ` +
+          progressEl.textContent = "Done";
+          const tokens = t.prompt_tokens + t.completion_tokens;
+          detailsLabel = `extraction details (${total} sections · ${(t.latency_s / 60).toFixed(1)} min · ` +
+                         `${Math.round(tokens / 1000)}K tokens)`;
+          updateToggle();
+          statsEl.textContent = ` · ${done}/${total} sections · ${reqCount} requirements · ` +
             `${t.prompt_tokens + t.completion_tokens} tokens · ${t.latency_s}s · ~$${t.cost_usd.toFixed(4)}`;
         }
       }
     }
   } catch (err) {
-    statusEl.textContent = "Error: " + err.message;
+    progressEl.textContent = "Error: " + err.message;
   } finally {
     runBtn.disabled = false;
   }
