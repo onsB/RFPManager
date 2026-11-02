@@ -19,16 +19,16 @@ Gold file format (see eval/gold/):
 import argparse
 import hashlib
 import json
-import re
 import subprocess
 from collections import Counter
 from pathlib import Path
 
-from app.agent import PROMPTS_DIR, extract_requirements, judge_faithfulness, normalize_text
+from app.agent import PROMPTS_DIR, extract_requirements, judge_section
 from app.config import settings
 from app.documents import load_document
+from app.quality import quote_overlap
 from app.schemas import SectionRequirement
-from app.sections import split_sections
+from app.sections import is_boilerplate, split_sections
 from app.telemetry import RunTrace
 
 ROOT = Path(__file__).parent.parent
@@ -36,28 +36,6 @@ GOLD_DIR = ROOT / "eval" / "gold"
 RESULTS_DIR = ROOT / "eval" / "results"
 
 MATCH_THRESHOLD = 0.6  # share of the shorter quote's words that must appear in the other
-# Function words, plus words every requirement shares (modal verbs, "supplier"), so the
-# match depends on what the requirement is about. "not" is kept: it changes the meaning.
-STOPWORDS = {
-    "the", "a", "an", "and", "or", "of", "to", "for", "in", "on", "by", "be", "is", "are", "with", "all", "any",
-    "must", "shall", "should", "may", "will", "need", "supplier",
-}
-
-
-def _words(text: str) -> set[str]:
-    return {w for w in re.findall(r"[a-z0-9£]+", normalize_text(text)) if w not in STOPWORDS}
-
-
-def quote_overlap(a: str, b: str) -> float:
-    """Share of the shorter quote's content words that appear in the other quote.
-
-    Dividing by the shorter quote lets a short extracted quote ("two references from
-    similar projects") match the longer gold sentence it comes from, and vice versa.
-    """
-    wa, wb = _words(a), _words(b)
-    if not wa or not wb:
-        return 0.0
-    return len(wa & wb) / min(len(wa), len(wb))
 
 
 def match(predictions: list[SectionRequirement], gold: dict) -> dict[str, tuple[str, str] | None]:
@@ -115,6 +93,8 @@ def evaluate(gold_path: Path, use_judge: bool) -> dict:
     predictions: list[SectionRequirement] = []
     errors = {}
     for section in sections:
+        if is_boilerplate(section):  # same as the live pipeline
+            continue
         try:
             predictions.extend(extract_requirements(section, trace))
         except Exception as exc:  # report it; one failing section shouldn't stop the eval
@@ -122,12 +102,18 @@ def evaluate(gold_path: Path, use_judge: bool) -> dict:
         trace.save()
 
     verdicts = {}
-    if use_judge:
+    if use_judge:  # same call as the live pipeline: one per section
+        by_section: dict[str, list[SectionRequirement]] = {}
         for pred in predictions:
+            by_section.setdefault(pred.section_id, []).append(pred)
+        for section_id, preds in by_section.items():
             try:
-                verdicts[pred.id] = judge_faithfulness(pred, trace)
+                verdicts.update(judge_section(preds, trace))
             except Exception as exc:
-                errors[f"judge {pred.id}"] = str(exc)
+                errors[f"judge {section_id}"] = str(exc)
+        missing = [p.id for p in predictions if p.id not in verdicts]
+        if missing:
+            errors["judge returned no verdict"] = ", ".join(missing)
         trace.save()
 
     matches = match(predictions, gold)

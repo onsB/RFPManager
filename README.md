@@ -38,6 +38,8 @@ structured output works; to try another one, change this value only.
 | `LLM_BASE_URL` | `http://localhost:1234/v1` | OpenAI-compatible endpoint (LM Studio) |
 | `LLM_API_KEY` | `lm-studio` | Ignored by LM Studio, required by the SDK |
 | `LLM_MODEL` | `qwen/qwen3-8b` | Model identifier in LM Studio |
+| `JUDGE_MODEL` | *(empty)* | Model for the faithfulness judge; empty reuses `LLM_MODEL` |
+| `LIVE_JUDGE` | `true` | Judge every requirement during normal runs (adds ~1.5 s each) |
 
 ### 4. Run
 
@@ -79,6 +81,26 @@ Runs extraction on every brief with gold labels in `eval/gold/` and writes a rep
 - **`No module named app`**: run `uv sync`, and in VS Code select the `.venv` interpreter.
 
 ## Evaluation
+
+Two layers: **online** checks on every run (no gold labels needed), and an **offline**
+harness that scores extraction against gold labels on a test brief.
+
+### Online: every run
+
+Each requirement is checked as soon as its section is extracted (`app/quality.py`):
+
+| Check | How |
+|---|---|
+| Quote found | The quote appears in the section text (deterministic) |
+| Faithful | The LLM judge says the description states the same content as its quote |
+| Duplicate | Its quote overlaps an earlier requirement's quote (deterministic) |
+| Summary grounding | No made-up requirement ids; every mandatory requirement is planned |
+
+Flagged requirements are highlighted in the web page and CLI with the judge's reason.
+The run's quality report (rates, verdict counts, ids that need review) is shown at the
+end and saved in the run trace (`runs/<run_id>.json`, key `quality`).
+
+### Offline: gold-label harness
 
 `eval/harness.py` scores the extraction step against hand-written gold labels.
 

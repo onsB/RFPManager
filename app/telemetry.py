@@ -17,6 +17,8 @@ class CallRecord(BaseModel):
     completion_tokens: int
     latency_s: float
     cost_usd: float
+    reasoning_tokens: int = 0  # thinking tokens, part of completion_tokens; should be ~0 with /no_think
+    finish_reason: str | None = None  # "length" = hit max_tokens, which we treat as looping
 
 
 class RunTrace(BaseModel):
@@ -28,6 +30,7 @@ class RunTrace(BaseModel):
     temperature: float = settings.llm_temperature
     max_document_chars: int = settings.max_document_chars
     max_section_chars: int = settings.max_section_chars  # changes how sections are split, so what S12 means
+    quality: dict = {}  # online evaluation results (app/quality.py), filled at the end of a run
     calls: list[CallRecord] = []
 
 
@@ -58,6 +61,10 @@ class RunTrace(BaseModel):
         return path
 
 
+class OutputTruncated(Exception):
+    """The model hit max_tokens: its JSON is cut off, and the usual cause is looping."""
+
+
 def traced_completion(
     client,
     trace: RunTrace | None,
@@ -66,7 +73,10 @@ def traced_completion(
     section_title: str | None = None,
     **kwargs,
 ):
-    """wraps the LLM run to record tokens, latency, and cost in a RunTrace"""
+    """wraps the LLM run to record tokens, latency, and cost in a RunTrace
+
+    Raises OutputTruncated (after recording the call) when the output hit max_tokens.
+    """
     start = time.perf_counter()
     result = client.chat.completions.create(**kwargs)
     latency = time.perf_counter() - start
@@ -75,6 +85,9 @@ def traced_completion(
     prompt = usage.prompt_tokens if usage else 0
     completion = usage.completion_tokens if usage else 0
     cost_usd = (prompt * settings.price_in_per_1m + completion * settings.price_out_per_1m) / 1_000_000
+    details = getattr(usage, "completion_tokens_details", None)
+    reasoning = (getattr(details, "reasoning_tokens", None) or 0) if details else 0
+    finish_reason = result.choices[0].finish_reason if result.choices else None
 
     if trace is not None:
         trace.calls.append(
@@ -86,7 +99,11 @@ def traced_completion(
                 prompt_tokens=prompt,
                 completion_tokens=completion,
                 latency_s=round(latency,2),
-                cost_usd=cost_usd
+                cost_usd=cost_usd,
+                reasoning_tokens=reasoning,
+                finish_reason=finish_reason,
             )
         )
+    if finish_reason == "length":
+        raise OutputTruncated(f"{step} output hit max_tokens ({completion} tokens): likely looping")
     return result

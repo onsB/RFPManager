@@ -10,6 +10,7 @@ from app.schemas import (
     RFPSummary,
     SectionExtraction,
     SectionRequirement,
+    SectionVerdicts,
     SolutionSummary,
     Synthesis,
 )
@@ -32,9 +33,26 @@ OPENING_CHARS = 3_000  # how much of the document the synthesis sees, for title 
 client = OpenAI(base_url=settings.llm_base_url, api_key=settings.llm_api_key)
 
 
+# Typographic characters PDFs use and models rarely copy: curly quotes, dashes, ligatures.
+_TYPOGRAPHY = str.maketrans({
+    "\u2018": "'", "\u2019": "'", "\u201a": "'", "\u201b": "'", "\u2032": "'",
+    "\u201c": '"', "\u201d": '"', "\u201e": '"', "\u201f": '"', "\u2033": '"',
+    "\u2010": "-", "\u2011": "-", "\u2012": "-", "\u2013": "-", "\u2014": "-", "\u2212": "-",
+    "\u00a0": " ", "\u2009": " ", "\u202f": " ", "\u00ad": None,  # nbsp, thin spaces; soft hyphen dropped
+    "\ufb01": "fi", "\ufb02": "fl", "\u2026": "...",
+})
+
+
 def normalize_text(text: str) -> str:
-    """Lowercases and strips Markdown and whitespace so quotes can be matched to the source."""
-    text = re.sub(r"<[^>]+>|[*_|`#]", " ", text.lower())
+    """Normalizes text so a quote can be matched to its source despite formatting.
+
+    Lowercases; maps curly quotes, dashes, ligatures and special spaces to plain ASCII;
+    strips Markdown and HTML tags; rejoins words hyphenated across a line break
+    ("environ-\nmental"); collapses whitespace.
+    """
+    text = text.lower().translate(_TYPOGRAPHY)
+    text = re.sub(r"<[^>]+>|[*_|`#]", " ", text)
+    text = re.sub(r"(\w)-\s*\n\s*(\w)", r"\1\2", text)  # line-break hyphenation, before newlines collapse
     return re.sub(r"\s+", " ", text).strip()
 
 
@@ -44,6 +62,7 @@ def extract_requirements(section: DocumentSection, trace: RunTrace | None) -> li
         client, trace, step="extract", section_id=section.id, section_title=section.breadcrumb,
         model=settings.llm_model,
         temperature=settings.llm_temperature,
+        max_tokens=settings.max_output_tokens,
         messages=[
             {"role": "system", "content": EXTRACT_PROMPT},
             # /no_think turns off Qwen3's reasoning: slower and not needed for extraction.
@@ -92,6 +111,7 @@ def synthesize_summary(
         client, trace, step="synthesize",
         model=settings.llm_model,
         temperature=settings.llm_temperature,
+        max_tokens=settings.max_summary_tokens,
         messages=[
             {"role": "system", "content": SYNTHESIZE_PROMPT},
             {"role": "user", "content": (
@@ -152,30 +172,43 @@ def summarize_rfp(document_text: str, trace: RunTrace | None) -> SolutionSummary
     return SolutionSummary.model_validate_json(response.choices[0].message.content)
 
 
-def judge_faithfulness(requirement: SectionRequirement, trace: RunTrace | None) -> FaithfulnessVerdict:
-    """Asks the judge model whether a requirement's description means the same as its quote.
+def judge_section(requirements: list[SectionRequirement], trace: RunTrace | None) -> dict[str, FaithfulnessVerdict]:
+    """Asks the judge model, in one call, whether each requirement's description means the same as its quote.
 
     Catches what the quote check can't: a verbatim quote with a description that
     changes its meaning (e.g. "CVs are not required" -> "Do not include CVs").
+    One call per section instead of per requirement: the instructions are sent once, so
+    ~75% fewer prompt tokens (not faster locally, where time follows output tokens; see
+    prompts/README.md). Returns {requirement id: verdict}; a requirement the
+    model skipped is missing from the result, and ids it made up are dropped.
     """
+    if not requirements:
+        return {}
+    items = "\n\n".join(
+        f"[{r.id}]\nQuote: {r.quote}\nDescription: {r.description}" for r in requirements
+    )
     response = traced_completion(
-        client, trace, step="judge", section_id=requirement.section_id,
+        client, trace, step="judge", section_id=requirements[0].section_id,
         model=settings.judge_model or settings.llm_model,
         temperature=0,  # a judge should give the same verdict every time
+        max_tokens=settings.max_output_tokens,
         messages=[
             {"role": "system", "content": JUDGE_PROMPT},
-            {"role": "user", "content": (
-                f"Quote: {requirement.quote}\n"
-                f"Description: {requirement.description}\n\n/no_think"
-            )},
+            {"role": "user", "content": f"{items}\n\n/no_think"},
         ],
         response_format={
             "type": "json_schema",
             "json_schema": {
-                "name": "faithfulness_verdict",
-                "schema": FaithfulnessVerdict.model_json_schema(),
+                "name": "section_verdicts",
+                "schema": SectionVerdicts.model_json_schema(),
                 "strict": True,
             },
         },
     )
-    return FaithfulnessVerdict.model_validate_json(response.choices[0].message.content)
+    result = SectionVerdicts.model_validate_json(response.choices[0].message.content)
+    known = {r.id for r in requirements}
+    verdicts: dict[str, FaithfulnessVerdict] = {}
+    for v in result.verdicts:
+        if v.requirement_id in known and v.requirement_id not in verdicts:
+            verdicts[v.requirement_id] = v
+    return verdicts

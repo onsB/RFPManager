@@ -5,6 +5,11 @@ from app.config import settings
 from app.schemas import DocumentSection
 
 HEADING_RE = re.compile(r"^(#{1,6})\s+(.+)$")
+# A table of contents rendered as a table: its first row is "Contents" / "Table of Contents".
+TOC_TABLE_RE = re.compile(r"^\|\s*(table of )?contents\s*\|", re.IGNORECASE)
+# A TOC line with dot leaders and a page number: "Key Dates ........ 3"
+DOT_LEADER_RE = re.compile(r"^.{2,}?(\.{4,}|…{2,}|(\s\.){3,})\s*\d{1,4}\s*$")
+PAGE_FOOTER_RE = re.compile(r"^\s*page \d+( of \d+)?\s*$", re.IGNORECASE)
 
 
 def clean_heading(raw: str) -> str:
@@ -23,6 +28,51 @@ def clean_heading(raw: str) -> str:
     return raw.strip().rstrip(":").strip()
 
 
+def _is_toc_table(rows: list[str]) -> bool:
+    """A table of contents: first row "Contents", or 3+ rows that all end in a page number."""
+    plain = [re.sub(r"[*_]", "", r).strip() for r in rows]
+    if TOC_TABLE_RE.match(plain[0]):
+        return True
+    cells = [[c.strip() for c in r.strip("|").split("|")] for r in plain if not re.fullmatch(r"[|\-\s:]+", r)]
+    last = [next((c for c in reversed(row) if c), "") for row in cells]
+    return len(cells) >= 3 and all(c.isdigit() for c in last)
+
+
+def strip_toc(markdown: str) -> str:
+    """Removes tables of contents and page footers, which would otherwise be sent to the LLM.
+
+    The parser attaches a TOC to whatever section precedes it (in the Beach Clubs RFP, a
+    600-char "Key Dates" section grew to 3,700 chars), and its lines look like headings
+    and requirements. Removes: tables of contents (see _is_toc_table, which also catches
+    a TOC continued on the next page without its header), dot-leader lines ending in a
+    page number, and "Page N" footer lines.
+    """
+    kept: list[str] = []
+    table: list[str] = []
+
+    def flush_table() -> None:
+        if table and not _is_toc_table(table):
+            kept.extend(table)
+        table.clear()
+
+    for line in markdown.splitlines():
+        plain = re.sub(r"[*_]", "", line).strip()
+        if plain.startswith("|"):
+            table.append(line)
+            continue
+        flush_table()
+        if DOT_LEADER_RE.match(plain) or PAGE_FOOTER_RE.match(plain):
+            continue
+        kept.append(line)
+    flush_table()
+    return "\n".join(kept)
+
+
+def is_boilerplate(section: DocumentSection) -> bool:
+    """True if the section's title matches `skip_section_patterns`: not sent to the LLM."""
+    return any(re.search(p, section.title, re.IGNORECASE) for p in settings.skip_section_patterns)
+
+
 def split_sections(markdown: str) -> list[DocumentSection]:
     """
     Splits a markdown string into sections based on headings.
@@ -36,6 +86,7 @@ def split_sections(markdown: str) -> list[DocumentSection]:
     Returns:
         list[DocumentSection]: A list of DocumentSection objects representing the sections.
     """
+    markdown = strip_toc(markdown)
     sections = []
     # Text before the first heading; dropped by the merge step if it is empty.
     current_section = DocumentSection(id="", title="Preamble", level=0, text="")
@@ -61,7 +112,7 @@ def split_sections(markdown: str) -> list[DocumentSection]:
 
     sections.append(current_section)
 
-    sections = merge_small_sections(sections)
+    sections = merge_small_sections(sections, settings.min_section_chars)
     return split_long_sections(sections, settings.max_section_chars)
 
 

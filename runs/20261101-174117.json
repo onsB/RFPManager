@@ -1,0 +1,338 @@
+{
+  "run_id": "20261101-174117",
+  "document": "synthetic_volunteer_platform.md",
+  "model": "qwen/qwen3-8b",
+  "temperature": 0.2,
+  "max_document_chars": 40000,
+  "max_section_chars": 8000,
+  "totals": {
+    "calls": 32,
+    "prompt_tokens": 9837,
+    "completion_tokens": 1977,
+    "latency_s": 110.0,
+    "tokens_per_s": 18.0,
+    "cost_usd": 0.003155
+  },
+  "calls": [
+    {
+      "step": "extract",
+      "section_id": "S01",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 352,
+      "completion_tokens": 6,
+      "latency_s": 0.99,
+      "cost_usd": 6.756e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S02",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 1. Background",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 384,
+      "completion_tokens": 6,
+      "latency_s": 0.81,
+      "cost_usd": 7.332000000000001e-05
+    },
+    {
+      "step": "extract",
+      "section_id": "S03",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 2. Scope of work > 2.1 Platform",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 421,
+      "completion_tokens": 263,
+      "latency_s": 13.26,
+      "cost_usd": 0.00025988
+    },
+    {
+      "step": "extract",
+      "section_id": "S04",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 2. Scope of work > 2.2 Training and handover",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 366,
+      "completion_tokens": 152,
+      "latency_s": 7.97,
+      "cost_usd": 0.00017227999999999997
+    },
+    {
+      "step": "extract",
+      "section_id": "S05",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 3. Data protection and compliance",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 404,
+      "completion_tokens": 266,
+      "latency_s": 13.85,
+      "cost_usd": 0.00025891999999999994
+    },
+    {
+      "step": "extract",
+      "section_id": "S06",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 4. Budget and timeline",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 405,
+      "completion_tokens": 178,
+      "latency_s": 9.47,
+      "cost_usd": 0.0001975
+    },
+    {
+      "step": "extract",
+      "section_id": "S07",
+      "section_title": "Invitation to Tender: Volunteer Coordination Platform > 5. How to respond",
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 414,
+      "completion_tokens": 334,
+      "latency_s": 17.22,
+      "cost_usd": 0.00030832
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 297,
+      "completion_tokens": 22,
+      "latency_s": 2.85,
+      "cost_usd": 6.886e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 286,
+      "completion_tokens": 23,
+      "latency_s": 1.49,
+      "cost_usd": 6.758e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 287,
+      "completion_tokens": 27,
+      "latency_s": 1.69,
+      "cost_usd": 7.056e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 290,
+      "completion_tokens": 29,
+      "latency_s": 1.77,
+      "cost_usd": 7.25e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S03",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 285,
+      "completion_tokens": 36,
+      "latency_s": 2.11,
+      "cost_usd": 7.65e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S04",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 282,
+      "completion_tokens": 29,
+      "latency_s": 1.76,
+      "cost_usd": 7.106e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S04",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 280,
+      "completion_tokens": 22,
+      "latency_s": 1.26,
+      "cost_usd": 6.58e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S04",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 280,
+      "completion_tokens": 22,
+      "latency_s": 1.29,
+      "cost_usd": 6.58e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 272,
+      "completion_tokens": 23,
+      "latency_s": 1.32,
+      "cost_usd": 6.506e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 281,
+      "completion_tokens": 22,
+      "latency_s": 1.44,
+      "cost_usd": 6.597999999999999e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 276,
+      "completion_tokens": 22,
+      "latency_s": 1.27,
+      "cost_usd": 6.508e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 287,
+      "completion_tokens": 56,
+      "latency_s": 3.09,
+      "cost_usd": 9.085999999999998e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 285,
+      "completion_tokens": 23,
+      "latency_s": 1.47,
+      "cost_usd": 6.739999999999998e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S05",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 282,
+      "completion_tokens": 50,
+      "latency_s": 2.78,
+      "cost_usd": 8.575999999999999e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S06",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 298,
+      "completion_tokens": 30,
+      "latency_s": 1.82,
+      "cost_usd": 7.464e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S06",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 294,
+      "completion_tokens": 46,
+      "latency_s": 2.62,
+      "cost_usd": 8.511999999999998e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S06",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 294,
+      "completion_tokens": 29,
+      "latency_s": 1.82,
+      "cost_usd": 7.322e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S07",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 307,
+      "completion_tokens": 23,
+      "latency_s": 1.5,
+      "cost_usd": 7.136e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S07",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 276,
+      "completion_tokens": 39,
+      "latency_s": 2.09,
+      "cost_usd": 7.697999999999998e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S07",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 276,
+      "completion_tokens": 29,
+      "latency_s": 1.63,
+      "cost_usd": 6.997999999999999e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S07",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 274,
+      "completion_tokens": 29,
+      "latency_s": 1.62,
+      "cost_usd": 6.962e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S07",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 276,
+      "completion_tokens": 32,
+      "latency_s": 1.77,
+      "cost_usd": 7.208e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S07",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 272,
+      "completion_tokens": 40,
+      "latency_s": 2.15,
+      "cost_usd": 7.696000000000001e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S07",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 271,
+      "completion_tokens": 29,
+      "latency_s": 1.63,
+      "cost_usd": 6.908e-05
+    },
+    {
+      "step": "judge",
+      "section_id": "S07",
+      "section_title": null,
+      "model": "qwen/qwen3-8b",
+      "prompt_tokens": 283,
+      "completion_tokens": 40,
+      "latency_s": 2.24,
+      "cost_usd": 7.894e-05
+    }
+  ]
+}

@@ -2,8 +2,19 @@ You extract requirements from ONE section of a Request for Proposal (RFP).
 
 A requirement is something the supplier must do, deliver, provide or comply with,
 or a constraint on the bid itself (deadline, budget, format, eligibility).
-NOT requirements: background on the client, the client's own goals or history,
-unless the text turns them into something the supplier must do.
+The supplier may be called the offeror, bidder, tenderer, contractor, lessee or applicant.
+
+Only extract obligations ON THE SUPPLIER. NOT requirements:
+- what the buyer will or may do: its rights ("reserves the right to", "may at its
+  discretion"), its own process and milestones ("will evaluate", "expects to announce",
+  release date, selection date);
+- statements of the buyer's position ("the property is offered as-is"), unless the text
+  requires the supplier to do something about it ("the Offeror must accept...");
+- background on the buyer, its own goals or history.
+If the sentence's subject is the buyer (the Council, the Trust, NPS, the Government,
+"we"), it is almost never a requirement.
+Exception: a deadline the supplier must meet (proposal, question or document submission)
+IS a requirement, even in a list or table of key dates.
 
 Rules:
 - One requirement per obligation. Split lists into separate requirements.
