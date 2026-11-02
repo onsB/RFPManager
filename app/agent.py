@@ -1,3 +1,4 @@
+import json
 import re
 from pathlib import Path
 
@@ -7,6 +8,7 @@ from app.config import settings
 from app.schemas import (
     DocumentSection,
     FaithfulnessVerdict,
+    ReviewIssue,
     RFPSummary,
     SectionExtraction,
     SectionRequirement,
@@ -95,20 +97,34 @@ def synthesize_summary(
     sections: list[DocumentSection],
     requirements: list[SectionRequirement],
     trace: RunTrace | None,
+    issues: list[ReviewIssue] | None = None,
+    previous: RFPSummary | None = None,
 ) -> RFPSummary:
     """Writes the overview, approach and risks from the extracted requirements, then checks the cited ids.
 
     The model sees the requirement list, not the whole document: it plans from what was
     extracted and verified, and every phase and risk must cite requirement ids.
+    With `issues` (from the critic) and the `previous` draft, it revises that draft; the
+    output schema and the grounding checks are the same either way.
     """
     opening = "\n\n".join(s.text for s in sections)[:OPENING_CHARS]
     requirement_lines = "\n".join(
         f"{r.id} [{r.category}, {'mandatory' if r.mandatory else 'optional'}] {r.description}"
         for r in requirements
     )
+    revision = ""
+    if issues and previous:
+        draft = previous.model_dump(include={"project_title", "client", "overview", "approach", "risks"})
+        issue_lines = "\n".join(
+            f"- [{i.kind}] {i.detail} Fix: {i.fix} (evidence: {', '.join(i.evidence) or 'none'})" for i in issues
+        )
+        revision = (
+            f"## Previous draft\n\n{json.dumps(draft, ensure_ascii=False)}\n\n"
+            f"## Reviewer issues to fix\n\n{issue_lines}\n\n"
+        )
 
     response = traced_completion(
-        client, trace, step="synthesize",
+        client, trace, step="revise" if revision else "synthesize",
         model=settings.llm_model,
         temperature=settings.llm_temperature,
         max_tokens=settings.max_summary_tokens,
@@ -116,7 +132,7 @@ def synthesize_summary(
             {"role": "system", "content": SYNTHESIZE_PROMPT},
             {"role": "user", "content": (
                 f"## Document opening\n\n{opening}\n\n"
-                f"## Extracted requirements\n\n{requirement_lines}\n\n/no_think"
+                f"## Extracted requirements\n\n{requirement_lines}\n\n{revision}/no_think"
             )},
         ],
         response_format={

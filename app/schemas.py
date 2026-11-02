@@ -95,6 +95,30 @@ class RFPSummary(BaseModel):
     deadline: Deadline | None = None  # set by app/facts.py from the document text, not by the LLM
 
 
+IssueKind = Literal["generic_risk", "uncovered_mandatory", "contradiction", "wrong_party", "missing_fact", "structure"]
+# Issues that block approval; missing_fact and structure are improvements, not errors.
+BLOCKING_KINDS = {"generic_risk", "uncovered_mandatory", "contradiction", "wrong_party"}
+
+
+class ReviewIssue(BaseModel):
+    """One problem the critic found in the draft brief, with what it checked."""
+
+    kind: IssueKind
+    detail: str = Field(description="What is wrong, specifically")
+    evidence: list[str] = Field(description="Section or requirement ids the critic looked at via tools")
+    fix: str = Field(description="What the writer should change")
+    source: Literal["critic", "code"] = "critic"  # "code": a deterministic check, not the LLM's judgement
+
+
+class Review(BaseModel):
+    """What the critic agent returns. `approved` is re-checked by code against BLOCKING_KINDS."""
+
+    approved: bool
+    issues: list[ReviewIssue]
+    # Set by code, not the LLM: evidence ids that never appeared in a tool result (dropped).
+    unverified_evidence: list[str] = []
+
+
 class ApproachStep(BaseModel):
     phase: str
     description: str

@@ -1,26 +1,34 @@
 import time
-from collections.abc import Iterator
+from collections import Counter
+from collections.abc import Generator, Iterator
 
 from app.agent import extract_requirements, judge_section, synthesize_summary
 from app.config import settings
+from app.critic import review_summary
 from app.facts import find_deadline
 from app.quality import mark_duplicates, quality_report
-from app.schemas import SectionRequirement
+from app.schemas import DocumentSection, RFPSummary, SectionRequirement
 from app.sections import is_boilerplate, split_sections
 from app.telemetry import RunTrace
+from app.tools import ToolContext
 
 
 def run_pipeline(text: str, document: str, section_ids: list[str] | None = None) -> Iterator[dict]:
     """Runs the whole analysis of one document, yielding an event after each step.
 
     Steps: split into sections -> extract requirements per section (and flag duplicates)
-    -> synthesize the summary -> judge each section's requirements (online evaluation).
-    The judge runs after the summary so the brief is on screen while the review flags
+    -> synthesize the draft summary -> critic agent reviews it with tools, and the writer
+    revises it (up to `max_review_rounds`) -> judge each section's requirements (online
+    evaluation). The judge runs last so the brief is on screen while the review flags
     fill in; nothing before it uses the verdicts. Events (plain dicts, JSON-ready):
       {"type": "sections"}  the sections found
       {"type": "section"}   one per section, with its requirements and LLM usage
                             ("skipped": true for boilerplate sections, not sent to the LLM)
-      {"type": "summary"}   overview, approach, risks and the checks
+      {"type": "summary"}   overview, approach, risks and the checks; "revision": 0 for the
+                            draft, n after the critic's round n ("error" set if revising failed)
+      {"type": "reviewing"} the critic is starting round n
+      {"type": "review"}    the critic's verdict for round n: approved, issues ("error" set if
+                            the agent failed; the current brief is kept)
       {"type": "judging"}   the judge is starting, with the number of sections to judge
       {"type": "verdicts"}  one per judged section: {requirement id: verdict and reason}
       {"type": "done"}      run totals, quality report and the trace file name
@@ -84,12 +92,16 @@ def run_pipeline(text: str, document: str, section_ids: list[str] | None = None)
     except Exception as exc:
         summary, error = None, str(exc)
     trace.save()
-    yield {"type": "summary", "summary": summary.model_dump() if summary else None, "error": error}
+    yield {"type": "summary", "summary": summary.model_dump() if summary else None, "revision": 0, "error": error}
+
+    review_log: list[dict] = []
+    if settings.agent_review and summary:
+        summary = yield from _review_loop(sections, all_requirements, summary, trace, review_log)
 
     if settings.live_judge:
         yield from _judge_sections(all_requirements, trace)
 
-    trace.quality = quality_report(all_requirements, summary, failed_sections, skipped_sections, trace)
+    trace.quality = quality_report(all_requirements, summary, failed_sections, skipped_sections, trace, review_log)
     path = trace.save()
     yield {
         "type": "done",
@@ -98,6 +110,58 @@ def run_pipeline(text: str, document: str, section_ids: list[str] | None = None)
         "run_id": trace.run_id,
         "trace_file": path.name,
     }
+
+
+def _review_loop(
+    sections: list[DocumentSection],
+    requirements: list[SectionRequirement],
+    summary: RFPSummary,
+    trace: RunTrace,
+    log: list[dict],
+) -> Generator[dict, None, RFPSummary]:
+    """Critic reviews, writer revises, until approved or `max_review_rounds`. Returns the final brief.
+
+    Any agent failure keeps the current brief: a worse brief is better than no brief.
+    The last revision isn't reviewed again (that would be one more round).
+    """
+    ctx = ToolContext(sections, requirements, summary)
+    for rnd in range(1, settings.max_review_rounds + 1):
+        yield {"type": "reviewing", "round": rnd}
+        try:
+            review = review_summary(ctx, trace)
+        except Exception as exc:  # loop cap, unparseable answer, truncation, server error
+            log.append({"round": rnd, "error": f"{type(exc).__name__}: {exc}"})
+            trace.save()
+            yield {"type": "review", "round": rnd, "approved": None, "issues": [], "error": log[-1]["error"]}
+            break
+        log.append({
+            "round": rnd,
+            "approved": review.approved,
+            "issues_by_kind": dict(Counter(i.kind for i in review.issues)),
+            "unverified_evidence": review.unverified_evidence,
+            "error": None,
+        })
+        trace.save()
+        yield {
+            "type": "review", "round": rnd, "approved": review.approved,
+            "issues": [i.model_dump() for i in review.issues],
+            "unverified_evidence": review.unverified_evidence, "error": None,
+        }
+        if review.approved:
+            break
+
+        try:
+            revised = synthesize_summary(sections, requirements, trace, issues=review.issues, previous=ctx.summary)
+        except Exception as exc:
+            log[-1]["revise_error"] = f"{type(exc).__name__}: {exc}"
+            trace.save()
+            yield {"type": "summary", "summary": None, "revision": rnd, "error": log[-1]["revise_error"]}
+            break
+        revised.deadline = ctx.summary.deadline  # found by code, unchanged by a revision
+        ctx.summary = revised
+        trace.save()
+        yield {"type": "summary", "summary": revised.model_dump(), "revision": rnd, "error": None}
+    return ctx.summary
 
 
 def _judge_sections(requirements: list[SectionRequirement], trace: RunTrace) -> Iterator[dict]:

@@ -17,6 +17,13 @@ class Settings(BaseSettings):
     # LIVE_JUDGE=false turns it off.
     live_judge: bool = True
 
+    # Critic agent: reviews the draft brief with tools and sends it back for revision.
+    # AGENT_REVIEW=false gives the fixed pipeline (draft only), for A/B comparisons.
+    agent_review: bool = True
+    agent_max_steps: int = 6  # LLM turns per review: the anti-looping guard on the tool loop
+    max_review_rounds: int = 2  # review -> revise rounds before keeping the latest brief
+    tool_result_chars: int = 4_000  # tool results are cut to this, so they can't flood the context
+
     # Local models have small context windows; longer documents are truncated for now.
     max_document_chars: int = 40_000
     max_section_chars: int = 8_000  # ~2k tokens per section
