@@ -15,6 +15,14 @@ Used by `extract_requirements()`, once per document section, with a strict JSON 
   "elements may be incorporated at Lessor's discretion"). The prompt now lists the
   supplier's other names (offeror, lessee...) and the buyer-side patterns to skip, with
   a subject test: if the subject is the buyer, it's almost never a requirement.
+- **Deadline exception (v3).** v2 listed the buyer's "process and timeline" as not a
+  requirement, which contradicts "deadlines are requirements": on the Beach Clubs "Key
+  Dates" section the model sometimes returned nothing, dropping the proposal deadline.
+  v3 calls them the buyer's "milestones" (release date, selection date) and says supplier
+  deadlines are requirements even in a list of dates. Measured on 2026-11-02: Key Dates 5/5
+  runs found both deadlines; on S03 the buyer rights were extracted in 4/4 runs with v2 and
+  1/6 with v3, but v3 also missed two real obligations there (due diligence, NPS approval
+  of alterations).
 - **One obligation per item**, so lists in RFPs become countable requirements.
 - **Verbatim quote (max 30 words)** so code can check each requirement against the source
   (`quote_found`). This is the main hallucination guard.
