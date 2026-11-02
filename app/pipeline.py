@@ -158,6 +158,9 @@ def _review_loop(
             yield {"type": "summary", "summary": None, "revision": rnd, "error": log[-1]["revise_error"]}
             break
         revised.deadline = ctx.summary.deadline  # found by code, unchanged by a revision
+        # Seen in testing: the writer sometimes copies the previous draft and ignores the issues.
+        written = {"overview", "approach", "risks"}
+        log[-1]["revision_changed"] = revised.model_dump(include=written) != ctx.summary.model_dump(include=written)
         ctx.summary = revised
         trace.save()
         yield {"type": "summary", "summary": revised.model_dump(), "revision": rnd, "error": None}
